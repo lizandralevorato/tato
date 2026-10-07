@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block titulo %}Como funciona o benefício{% endblock %}
+{% block descricao %}Sessões de massagem rápida e gratuitas no horário de trabalho: como agendar, fazer check-in e cancelar.{% endblock %}
+{% block conteudo %}
+<h1>Como funciona o benefício de massagem</h1>
+<p class="introducao">
+  A empresa oferece sessões de massagem rápida, de {{ duracao }} minutos, feitas por massoterapeutas da equipe,
+  durante o horário de trabalho. É de graça para quem trabalha aqui.
+</p>
+{% if not user.is_authenticated %}
+  <p><a class="botao botao--grande" href="{% url 'contas:entrar' %}">Entrar e agendar</a></p>
+{% else %}
+  <p><a class="botao botao--grande" href="{% url 'agenda:agendar_dia' %}">Agendar massagem</a></p>
+{% endif %}
+
+<section class="pilha" aria-labelledby="cf-passos">
+  <h2 id="cf-passos">Passo a passo</h2>
+  <ol>
+    <li><strong>Agende.</strong> Entre no site com o seu e-mail da empresa, escolha o dia e o horário. Funciona no celular e no computador.</li>
+    <li><strong>Faça o check-in.</strong>{% if politica.checkin_prazo_min %} No dia, o check-in abre {{ checkin_abre }} antes da massagem e vai até {{ checkin_prazo }} antes. Você recebe um lembrete no celular com os botões Fazer check-in e Não vou.{% else %} Não é preciso confirmar antes; basta ir no horário.{% endif %}</li>
+    <li><strong>Avise que chegou.</strong> Na porta da sala, toque em Cheguei. O massoterapeuta recebe o aviso na hora.</li>
+    <li><strong>Não vai mais?</strong> Cancele até {{ politica.antecedencia_cancelamento_min }} minutos antes, para outra pessoa usar o horário.</li>
+  </ol>
+</section>
+
+<section class="pilha" aria-labelledby="cf-regras">
+  <h2 id="cf-regras">Regras</h2>
+  <ul>
+    <li>Até {{ politica.max_por_semana }} massage{{ politica.max_por_semana|pluralize:"m,ns" }} por semana{% if politica.uma_por_dia %}, em dias diferentes{% endif %}.</li>
+    <li>Você pode agendar com até {{ politica.dias_para_agendar }} dias de antecedência.</li>
+    {% if politica.checkin_prazo_min %}<li>Sem check-in até {{ checkin_prazo }} antes (com {{ politica.checkin_tolerancia_min }} minutos de tolerância), a reserva é liberada para outra pessoa.</li>{% endif %}
+    <li>Tolerância de atraso: {{ politica.tolerancia_min }} minutos. Depois disso, o massoterapeuta pode marcar falta.</li>
+    {% if politica.falta_conta_no_limite %}<li>Falta conta no limite da semana. Cancelamento feito no prazo não conta.</li>{% endif %}
+    <li>Dia lotado? Entre na lista de espera e receba um aviso se alguém cancelar.</li>
+  </ul>
+</section>
+
+<section class="pilha" aria-labelledby="cf-acessivel">
+  <h2 id="cf-acessivel">Feito para todas as pessoas</h2>
+  <p>
+    O site funciona com leitores de tela (TalkBack, VoiceOver e NVDA), com letras grandes, cores de alto contraste,
+    avisos falados e tradução para Libras. Ajuste tudo em Preferências depois de entrar.
+    <a href="{% url 'acessibilidade' %}">Saiba mais sobre a acessibilidade do site</a>.
+  </p>
+</section>
+
+<section class="pilha" aria-labelledby="cf-duvidas">
+  <h2 id="cf-duvidas">Dúvidas</h2>
+  <p>Fale com a recepção. Ela também pode agendar para você.</p>
+</section>
+{% endblock %}

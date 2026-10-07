@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Agendamento de {{ ag.colaborador.nome }}{% endblock %}
+{% block conteudo %}
+<p><a href="{% url 'agenda:recepcao' %}?dia={{ ag.inicio|date:'Y-m-d' }}">Voltar para a agenda do dia</a></p>
+<h1>Agendamento</h1>
+
+<div class="cartao cartao--destaque">
+  <p class="destaque-grande">{{ descricao|capfirst }}</p>
+  <p>{% status ag %}</p>
+  <dl>
+    <dt>Origem</dt><dd>{{ ag.get_origem_display }}</dd>
+    <dt>E-mail</dt><dd>{{ ag.colaborador.email }}</dd>
+    {% if ag.cancelado_por %}<dt>Cancelado por</dt><dd>{{ ag.cancelado_por.nome }}</dd>{% endif %}
+  </dl>
+  {% if pode_cancelar or pode_atender or pode_faltar %}
+    <div class="acoes">
+      {% if pode_atender %}
+        <form method="post" action="{% url 'agenda:recepcao_marcar' ag.pk 'atendido' %}">
+          {% csrf_token %}<button type="submit" class="botao">Marcar atendido</button>
+        </form>
+      {% endif %}
+      {% if pode_faltar %}
+        <form method="post" action="{% url 'agenda:recepcao_marcar' ag.pk 'faltou' %}">
+          {% csrf_token %}<button type="submit" class="botao botao--perigo">Marcar falta</button>
+        </form>
+      {% endif %}
+      {% if pode_cancelar %}
+        <a class="botao botao--perigo" href="{% url 'agenda:cancelar' ag.pk %}?de=recepcao">Cancelar agendamento</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+<section aria-labelledby="titulo-historico" class="pilha">
+  <h2 id="titulo-historico">Histórico</h2>
+  {% if historico %}
+    <ol class="lista-simples">
+      {% for h in historico %}
+        <li><strong>{{ h.em|dia|capfirst }}, {{ h.em|hora }}</strong>: {{ h.get_acao_display }}, por {{ h.quem }}.{% if h.detalhe %} {{ h.detalhe }}{% endif %}</li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p>Sem registros. Agendamentos feitos antes do histórico existir não têm detalhes.</p>
+  {% endif %}
+</section>
+{% endblock %}

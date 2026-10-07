@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block titulo %}Cancelar agendamento{% endblock %}
+{% block conteudo %}
+<h1>Cancelar agendamento?</h1>
+<div class="cartao cartao--destaque">
+  <p class="destaque-grande">{{ descricao|capfirst }}</p>
+</div>
+<p>O horário ficará livre para outra pessoa e {% if user.eh_equipe %}o massoterapeuta{% else %}{{ agendamento.massoterapeuta.nome }}{% endif %} será avisado.</p>
+
+<form method="post" action="{% url 'agenda:cancelar' agendamento.pk %}{% if de %}?de={{ de|urlencode }}{% endif %}">
+  {% csrf_token %}
+  <div class="acoes">
+    <button type="submit" class="botao botao--perigo botao--grande">Sim, cancelar</button>
+    <a class="botao botao--secundario botao--grande" href="{% if de == 'recepcao' %}{% url 'agenda:recepcao' %}{% else %}{% url 'agenda:meus_agendamentos' %}{% endif %}">Não, manter</a>
+  </div>
+</form>
+{% endblock %}

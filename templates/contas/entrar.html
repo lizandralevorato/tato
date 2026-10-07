@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block titulo %}Entrar{% endblock %}
+{% block descricao %}Entre com o e-mail da empresa para agendar sua massagem ou ver sua agenda de atendimentos.{% endblock %}
+{% block conteudo %}
+<h1>Entrar</h1>
+<p class="introducao">Use o seu e-mail da empresa para agendar ou ver sua agenda de massagens.</p>
+
+{% include "componentes/resumo_erros.html" %}
+
+<form method="post" class="cartao" novalidate>
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ next }}">
+  {% include "componentes/campo.html" with campo=form.username %}
+  {% include "componentes/campo.html" with campo=form.password %}
+  <div class="campo" data-mostrar-senha="{{ form.password.id_for_label }}" hidden>
+    <label class="opcao opcao--verificacao" for="mostrar-senha">
+      <input type="checkbox" id="mostrar-senha">
+      <span class="opcao__texto">Mostrar a senha</span>
+    </label>
+  </div>
+  <div class="acoes">
+    <button type="submit" class="botao botao--grande">Entrar</button>
+  </div>
+</form>
+
+<p>Esqueceu a senha ou não tem acesso? Fale com a recepção.</p>
+{% endblock %}

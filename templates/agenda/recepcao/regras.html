@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Regras do benefício{% endblock %}
+{% block conteudo %}
+<h1>Regras do benefício</h1>
+<p class="introducao">Valem para {{ unidade.nome }}. As mudanças valem a partir de agora; agendamentos já feitos continuam.</p>
+
+{% include "componentes/resumo_erros.html" %}
+
+<form method="post" class="pilha" novalidate>
+  {% csrf_token %}
+  <section class="cartao" aria-labelledby="secao-limites">
+    <h2 id="secao-limites">Limites</h2>
+    {% include "componentes/campo.html" with campo=form.max_por_semana %}
+    {% include "componentes/verificacao.html" with campo=form.uma_por_dia %}
+    {% include "componentes/verificacao.html" with campo=form.falta_conta_no_limite %}
+    {% include "componentes/campo.html" with campo=form.dias_para_agendar %}
+  </section>
+
+  <section class="cartao" aria-labelledby="secao-checkin">
+    <h2 id="secao-checkin">Check-in (confirmar que vai)</h2>
+    {% include "componentes/campo.html" with campo=form.checkin_abre_min %}
+    {% include "componentes/campo.html" with campo=form.checkin_prazo_min %}
+    {% include "componentes/campo.html" with campo=form.checkin_tolerancia_min %}
+  </section>
+
+  <section class="cartao" aria-labelledby="secao-dia">
+    <h2 id="secao-dia">No dia da massagem</h2>
+    {% include "componentes/campo.html" with campo=form.antecedencia_cancelamento_min %}
+    {% include "componentes/campo.html" with campo=form.chegada_abre_min %}
+    {% include "componentes/campo.html" with campo=form.tolerancia_min %}
+    {% include "componentes/campo.html" with campo=form.aviso_proximo_min %}
+  </section>
+
+  <div class="acoes"><button type="submit" class="botao botao--grande">Salvar regras</button></div>
+</form>
+{% endblock %}

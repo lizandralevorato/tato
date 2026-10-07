@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Meus horários{% endblock %}
+{% block conteudo %}
+<h1>Meus horários de atendimento</h1>
+<p class="introducao">
+  Sessões de {{ massoterapeuta.duracao_sessao_min }} minutos, com {{ massoterapeuta.intervalo_min }} minutos de intervalo.
+  Você mesmo escolhe os dias e horários em que atende. A duração da sessão é combinada com a recepção.
+</p>
+
+<section aria-labelledby="titulo-semana" class="pilha">
+  <h2 id="titulo-semana">Toda semana</h2>
+  {% if periodos %}
+    <ul class="lista-simples">
+      {% regroup periodos by get_dia_semana_display as por_dia %}
+      {% for dia in por_dia %}
+        <li class="cartao">
+          <h3>{{ dia.grouper }}</h3>
+          <ul class="lista-simples">
+            {% for p in dia.list %}
+              <li class="agenda__linha">
+                <span>Das {{ p.hora_inicio|hora }} às {{ p.hora_fim|hora }}</span>
+                <a href="{% url 'agenda:remover_periodo' p.pk %}">Remover<span class="sr-only"> o horário de {{ dia.grouper }}, das {{ p.hora_inicio|hora }} às {{ p.hora_fim|hora }}</span></a>
+              </li>
+            {% endfor %}
+          </ul>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Nenhum horário cadastrado ainda. Adicione abaixo os períodos em que você atende.</p>
+  {% endif %}
+</section>
+
+<section aria-labelledby="titulo-adicionar" class="cartao">
+  <h2 id="titulo-adicionar">Adicionar horário</h2>
+  <p>Por exemplo: segunda-feira, das 8h às 11h40. Para atender de manhã e de tarde, adicione dois períodos.</p>
+  {% include "componentes/resumo_erros.html" with form=form_periodo %}
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "componentes/campo.html" with campo=form_periodo.dia_semana %}
+    {% include "componentes/campo.html" with campo=form_periodo.hora_inicio %}
+    {% include "componentes/campo.html" with campo=form_periodo.hora_fim %}
+    <div class="acoes">
+      <button type="submit" name="adicionar_periodo" value="1" class="botao">Adicionar horário</button>
+    </div>
+  </form>
+</section>
+
+<section aria-labelledby="titulo-bloqueios" class="pilha">
+  <h2 id="titulo-bloqueios">Folgas e ausências marcadas</h2>
+  {% if bloqueios %}
+    <ul class="lista-simples">
+      {% for item in bloqueios %}
+        <li class="cartao agenda__linha">
+          <span><strong>{{ item.b.get_motivo_display }}</strong>: {{ item.descricao }}{% if item.b.observacao %} ({{ item.b.observacao }}){% endif %}</span>
+          <form method="post" action="{% url 'agenda:remover_ausencia' item.b.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="botao botao--secundario">Remover<span class="sr-only"> {{ item.b.get_motivo_display }}, {{ item.descricao }}</span></button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Nenhuma folga ou ausência marcada.</p>
+  {% endif %}
+</section>
+
+<section aria-labelledby="titulo-ausencia" class="cartao">
+  <h2 id="titulo-ausencia">Marcar folga ou férias</h2>
+  <p>Nesse período ninguém consegue agendar com você.</p>
+  {% include "componentes/resumo_erros.html" with form=form_ausencia %}
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% if conflitos %}
+      <div class="mensagem mensagem--aviso" tabindex="-1" data-focar-ao-carregar role="region" aria-labelledby="titulo-conflitos">
+        <span class="mensagem__icone" aria-hidden="true">!</span>
+        <div>
+          <h3 id="titulo-conflitos">Há pessoas marcadas nesse período</h3>
+          <ul>{% for texto in conflitos %}<li>{{ texto|capfirst }}</li>{% endfor %}</ul>
+          <p>Para marcar a ausência, essas massagens serão canceladas e cada pessoa receberá um aviso.</p>
+          <label class="opcao opcao--verificacao" for="ausencia-cancelar">
+            <input type="checkbox" name="ausencia-cancelar_agendamentos" id="ausencia-cancelar" value="on">
+            <span class="opcao__texto">Cancelar essas massagens e avisar as pessoas</span>
+          </label>
+        </div>
+      </div>
+    {% endif %}
+    {% include "componentes/grupo_opcoes.html" with campo=form_ausencia.motivo %}
+    {% include "componentes/campo.html" with campo=form_ausencia.data_inicio %}
+    {% include "componentes/campo.html" with campo=form_ausencia.data_fim %}
+    {% include "componentes/campo.html" with campo=form_ausencia.hora_inicio %}
+    {% include "componentes/campo.html" with campo=form_ausencia.hora_fim %}
+    {% include "componentes/campo.html" with campo=form_ausencia.observacao %}
+    <div class="acoes">
+      <button type="submit" name="marcar_ausencia" value="1" class="botao">Marcar ausência</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

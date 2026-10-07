@@ -1,0 +1,99 @@
+{% load static %}<!doctype html>
+<html lang="pt-BR"
+      class="{{ perfil_a11y.classes_html }}"
+      data-fala="{{ perfil_a11y.fala_ativa|yesno:'1,0' }}"
+      data-fala-velocidade="{{ perfil_a11y.fala_velocidade|stringformat:'d' }}"
+      data-vibracao="{{ perfil_a11y.vibracao|yesno:'1,0' }}"
+      data-som="{{ perfil_a11y.som|yesno:'1,0' }}"
+      data-libras="{{ perfil_a11y.libras|yesno:'1,0' }}">
+<head>
+  <meta charset="utf-8">
+  {# Sem maximum-scale/user-scalable: o zoom nunca pode ser bloqueado. #}
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#5705CB">
+  <title>{% block titulo %}{% endblock %} | Agenda de Massagem</title>
+  <meta name="description" content="{% block descricao %}Agende sua massagem no trabalho e acompanhe a agenda pelo celular, com leitor de tela, texto ampliado e alto contraste.{% endblock %}">
+  <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
+  <link rel="icon" href="{% static 'img/icone.svg' %}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{% static 'img/icone-180.png' %}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Massagem">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Open+Sans:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/componentes.css' %}">
+  <script src="{% static 'js/anunciador.js' %}" defer></script>
+  <script src="{% static 'js/push.js' %}" defer></script>
+  <script src="{% static 'js/libras.js' %}" defer></script>
+  {% block cabeca %}{% endblock %}
+</head>
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+  <div class="faixa-marca" aria-hidden="true"></div>
+  <header class="cabecalho">
+    <div class="cabecalho__interno">
+      <a class="marca" href="{% url 'inicio' %}">
+        <img class="marca__icone" src="{% static 'img/icone.svg' %}" alt="">
+        Agenda de Massagem
+      </a>
+      {% if user.is_authenticated %}
+        {% with nome_url=request.resolver_match.view_name %}
+        <nav class="navegacao" aria-label="Menu principal">
+          <ul>
+            {% if user.eh_massoterapeuta %}
+              <li><a href="{% url 'agenda:agora' %}" {% if nome_url == 'agenda:agora' %}aria-current="page"{% endif %}>Minha agenda</a></li>
+              <li><a href="{% url 'agenda:disponibilidade' %}" {% if nome_url == 'agenda:disponibilidade' %}aria-current="page"{% endif %}>Meus horários</a></li>
+            {% elif user.eh_equipe %}
+              <li><a href="{% url 'agenda:recepcao' %}" {% if nome_url == 'agenda:recepcao' or nome_url == 'agenda:recepcao_agendar' %}aria-current="page"{% endif %}>Agenda da unidade</a></li>
+              <li><a href="{% url 'painel:inicio' %}" {% if nome_url == 'painel:inicio' or nome_url == 'painel:historico' %}aria-current="page"{% endif %}>Painel</a></li>
+              <li><a href="{% url 'agenda:pessoas' %}" {% if nome_url == 'agenda:pessoas' or nome_url == 'agenda:pessoa' or nome_url == 'agenda:pessoa_nova' %}aria-current="page"{% endif %}>Pessoas</a></li>
+              <li><a href="{% url 'agenda:regras' %}" {% if nome_url == 'agenda:regras' %}aria-current="page"{% endif %}>Regras</a></li>
+              <li><a href="{% url 'agenda:meus_agendamentos' %}" {% if nome_url == 'agenda:meus_agendamentos' %}aria-current="page"{% endif %}>Minhas massagens</a></li>
+            {% else %}
+              <li><a href="{% url 'agenda:meus_agendamentos' %}" {% if nome_url == 'agenda:meus_agendamentos' %}aria-current="page"{% endif %}>Meus agendamentos</a></li>
+              <li><a href="{% url 'agenda:agendar_dia' %}" {% if nome_url == 'agenda:agendar_dia' or nome_url == 'agenda:agendar_horario' or nome_url == 'agenda:agendar_confirmar' %}aria-current="page"{% endif %}>Agendar</a></li>
+            {% endif %}
+            {% if user.eh_massoterapeuta or user.eh_equipe or tem_comunicados %}
+              <li><a href="{% url 'comunicados:lista' %}" {% if nome_url|slice:':12' == 'comunicados:' %}aria-current="page"{% endif %}>Comunicados{% if comunicados_nao_lidos %} <span class="contador">{{ comunicados_nao_lidos }}<span class="sr-only"> novo{{ comunicados_nao_lidos|pluralize }}</span></span>{% endif %}</a></li>
+            {% endif %}
+            <li><a href="{% url 'contas:preferencias' %}" {% if nome_url == 'contas:preferencias' %}aria-current="page"{% endif %}>Preferências</a></li>
+            <li>
+              <form method="post" action="{% url 'contas:sair' %}">
+                {% csrf_token %}
+                <button type="submit">Sair</button>
+              </form>
+            </li>
+          </ul>
+        </nav>
+        {% endwith %}
+      {% endif %}
+    </div>
+  </header>
+
+  <main id="conteudo" class="principal" tabindex="-1">
+    {% include "componentes/mensagens.html" %}
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  <footer class="rodape">
+    <div class="rodape__interno">
+      <p>
+        <a href="{% url 'como_funciona' %}">Como funciona o benefício</a> ·
+        <a href="{% url 'acessibilidade' %}">Acessibilidade deste site</a> ·
+        <button type="button" class="botao-link" data-abrir-libras hidden>Traduzir para Libras</button>
+      </p>
+      {% if user.is_authenticated %}<p>Conectado como {{ user.nome }}</p>{% endif %}
+    </div>
+  </footer>
+
+  <div id="anuncio-educado" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <div id="anuncio-urgente" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

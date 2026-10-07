@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block titulo %}Pessoas{% endblock %}
+{% block conteudo %}
+<h1>Pessoas</h1>
+<p class="introducao">Colaboradores, massoterapeutas e equipe da recepção{% if unidade %} de {{ unidade.nome }}{% endif %}.</p>
+<p><a class="botao" href="{% url 'agenda:pessoa_nova' %}">Cadastrar pessoa</a></p>
+
+<form method="get" class="cartao" role="search" aria-label="Procurar pessoas">
+  <div class="campo">
+    <label for="busca">Nome ou e-mail</label>
+    <input type="text" id="busca" name="q" value="{{ busca }}" autocomplete="off">
+  </div>
+  <div class="campo">
+    <label for="filtro-papel">Papel</label>
+    <select id="filtro-papel" name="papel">
+      <option value="">Todos</option>
+      {% for valor, rotulo in papeis %}<option value="{{ valor }}"{% if papel == valor %} selected{% endif %}>{{ rotulo }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="acoes"><button type="submit" class="botao botao--secundario">Procurar</button></div>
+</form>
+
+<p role="status">{{ total }} pessoa{{ total|pluralize }}{% if total > 200 %}, mostrando as 200 primeiras. Use a busca para achar alguém{% endif %}.</p>
+
+{% if pessoas %}
+  <div class="tabela-rolavel" role="region" aria-labelledby="cap-pessoas" tabindex="0">
+    <table>
+      <caption id="cap-pessoas">Pessoas cadastradas</caption>
+      <thead>
+        <tr><th scope="col">Nome</th><th scope="col">E-mail</th><th scope="col">Papel</th><th scope="col">Acesso</th><th scope="col">Ações</th></tr>
+      </thead>
+      <tbody>
+        {% for p in pessoas %}
+          <tr>
+            <th scope="row">{{ p.nome }}</th>
+            <td>{{ p.email }}</td>
+            <td>{{ p.get_papel_display }}</td>
+            <td>{% if p.is_active %}Ativo{% else %}Desativado{% endif %}</td>
+            <td>{% if not p.is_superuser or user.is_superuser %}<a href="{% url 'agenda:pessoa' p.pk %}">Editar<span class="sr-only"> {{ p.nome }}</span></a>{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,7 @@
+{% load agenda %}
+<div class="campo">
+  <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+  {% if campo.help_text %}<p class="ajuda" id="{{ campo.auto_id }}-ajuda">{{ campo.help_text }}</p>{% endif %}
+  {% if campo.errors %}<p class="erro-campo" id="{{ campo.auto_id }}-erro"><span aria-hidden="true">✖ </span>{{ campo.errors|join:" " }}</p>{% endif %}
+  {% widget campo %}
+</div>

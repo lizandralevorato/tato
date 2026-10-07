@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Histórico de alterações{% endblock %}
+{% block conteudo %}
+<p><a href="{% url 'painel:inicio' %}?de={{ de.isoformat }}&amp;ate={{ ate.isoformat }}">Voltar para o painel</a></p>
+<h1>Histórico de alterações</h1>
+<p class="introducao">Quem agendou, encaixou, cancelou, fez check-in ou marcou falta, de {{ de|date:"d/m/Y" }} a {{ ate|date:"d/m/Y" }}.</p>
+
+{% include "painel/_filtros.html" %}
+
+<form method="get" class="cartao" aria-label="Filtrar por tipo de alteração">
+  <input type="hidden" name="de" value="{{ de.isoformat }}">
+  <input type="hidden" name="ate" value="{{ ate.isoformat }}">
+  {% if massoterapeuta %}<input type="hidden" name="m" value="{{ massoterapeuta.pk }}">{% endif %}
+  <div class="campo">
+    <label for="filtro-acao">Tipo de alteração</label>
+    <select id="filtro-acao" name="acao">
+      <option value="">Todas</option>
+      {% for valor, rotulo in acoes %}<option value="{{ valor }}"{% if acao == valor %} selected{% endif %}>{{ rotulo }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="acoes"><button type="submit" class="botao botao--secundario">Filtrar</button></div>
+</form>
+
+<p role="status">{{ pagina.paginator.count }} registro{{ pagina.paginator.count|pluralize }}.</p>
+
+{% if pagina.object_list %}
+  <div class="tabela-rolavel" role="region" aria-labelledby="cap-historico" tabindex="0">
+    <table>
+      <caption id="cap-historico">Alterações, da mais recente para a mais antiga</caption>
+      <thead>
+        <tr><th scope="col">Quando</th><th scope="col">O que</th><th scope="col">Quem fez</th><th scope="col">Massagem</th></tr>
+      </thead>
+      <tbody>
+        {% for h in pagina.object_list %}
+          <tr>
+            <th scope="row">{{ h.em|date:"d/m" }}, {{ h.em|hora }}</th>
+            <td>{{ h.get_acao_display }}{% if h.detalhe %}. {{ h.detalhe }}{% endif %}</td>
+            <td>{{ h.quem }}</td>
+            <td><a href="{% url 'agenda:recepcao_agendamento' h.agendamento_id %}">{{ h.agendamento.inicio|date:"d/m" }}, {{ h.agendamento.inicio|hora }}, {{ h.agendamento.colaborador.nome }} com {{ h.agendamento.massoterapeuta.nome }}</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pagina.has_other_pages %}
+    <nav aria-label="Páginas do histórico" class="navegacao-dias">
+      {% if pagina.has_previous %}<a class="botao botao--secundario" href="?{{ consulta }}&amp;pagina={{ pagina.previous_page_number }}">Página anterior</a>{% endif %}
+      <p>Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</p>
+      {% if pagina.has_next %}<a class="botao botao--secundario" href="?{{ consulta }}&amp;pagina={{ pagina.next_page_number }}">Próxima página</a>{% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <p>Nenhuma alteração nesse período.</p>
+{% endif %}
+{% endblock %}

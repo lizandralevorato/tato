@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block titulo %}Remover horário{% endblock %}
+{% block conteudo %}
+<h1>Remover este horário?</h1>
+<div class="cartao cartao--destaque">
+  <p class="destaque-grande">{{ descricao }}</p>
+</div>
+<p>Depois de remover, ninguém mais consegue agendar com você nesse horário.</p>
+
+<form method="post">
+  {% csrf_token %}
+  {% if afetados %}
+    <section class="mensagem mensagem--aviso" aria-labelledby="titulo-afetados">
+      <span class="mensagem__icone" aria-hidden="true">!</span>
+      <div>
+        <h2 id="titulo-afetados">Já tem gente marcada nesse horário</h2>
+        <ul>{% for texto in afetados %}<li>{{ texto|capfirst }}</li>{% endfor %}</ul>
+        <p>Se você não marcar a opção abaixo, essas massagens continuam valendo.</p>
+        <label class="opcao opcao--verificacao" for="cancelar-agendamentos">
+          <input type="checkbox" name="cancelar_agendamentos" id="cancelar-agendamentos" value="on">
+          <span class="opcao__texto">Cancelar essas massagens e avisar as pessoas</span>
+        </label>
+      </div>
+    </section>
+  {% endif %}
+  <div class="acoes">
+    <button type="submit" class="botao botao--perigo botao--grande">Sim, remover</button>
+    <a class="botao botao--secundario botao--grande" href="{% url 'agenda:disponibilidade' %}">Não, manter</a>
+  </div>
+</form>
+{% endblock %}

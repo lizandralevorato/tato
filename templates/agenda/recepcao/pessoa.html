@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}{% if pessoa %}Editar {{ pessoa.nome }}{% else %}Cadastrar pessoa{% endif %}{% endblock %}
+{% block conteudo %}
+<p><a href="{% url 'agenda:pessoas' %}">Voltar para Pessoas</a></p>
+<h1>{% if pessoa %}Editar {{ pessoa.nome }}{% else %}Cadastrar pessoa{% endif %}</h1>
+
+{% include "componentes/resumo_erros.html" %}
+
+<form method="post" class="pilha" novalidate>
+  {% csrf_token %}
+  <section class="cartao" aria-labelledby="secao-dados">
+    <h2 id="secao-dados">Dados</h2>
+    {% include "componentes/campo.html" with campo=form.first_name %}
+    {% include "componentes/campo.html" with campo=form.last_name %}
+    {% include "componentes/campo.html" with campo=form.email %}
+    {% include "componentes/campo.html" with campo=form.unidade %}
+  </section>
+
+  <section class="cartao" aria-labelledby="secao-acesso">
+    <h2 id="secao-acesso">Acesso</h2>
+    {% include "componentes/grupo_opcoes.html" with campo=form.papel %}
+    {% include "componentes/campo.html" with campo=form.nova_senha %}
+    {% include "componentes/verificacao.html" with campo=form.is_active %}
+  </section>
+
+  <section class="cartao" aria-labelledby="secao-massoterapeuta">
+    <h2 id="secao-massoterapeuta">Se for massoterapeuta</h2>
+    <p>Os dias e horários de atendimento são escolhidos pelo próprio massoterapeuta, na tela Meus horários.</p>
+    {% include "componentes/campo.html" with campo=form.duracao_sessao_min %}
+    {% include "componentes/campo.html" with campo=form.intervalo_min %}
+    {% include "componentes/verificacao.html" with campo=form.atendendo %}
+  </section>
+
+  <div class="acoes">
+    <button type="submit" class="botao botao--grande">{% if pessoa %}Salvar{% else %}Cadastrar{% endif %}</button>
+  </div>
+</form>
+{% endblock %}

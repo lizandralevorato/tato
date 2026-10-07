@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Agendar: escolha o horário de {{ data|dia }}{% endblock %}
+{% block conteudo %}
+<p class="texto-suave">Passo 2 de 3</p>
+<h1>Escolha o horário</h1>
+<p class="introducao">{{ data|dia|capfirst }}. <a href="{% url 'agenda:agendar_dia' %}">Trocar o dia</a></p>
+
+{% if massoterapeutas|length > 1 %}
+<form method="get" class="cartao secundario">
+  <div class="campo">
+    <label for="filtro-m">Massoterapeuta</label>
+    <select id="filtro-m" name="m">
+      <option value="">Tanto faz (qualquer massoterapeuta livre)</option>
+      {% for m in massoterapeutas %}
+        <option value="{{ m.pk }}"{% if preferido and preferido.pk == m.pk %} selected{% endif %}>{{ m.nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="acoes"><button type="submit" class="botao botao--secundario">Mostrar horários</button></div>
+</form>
+{% endif %}
+
+{% if periodos %}
+  <form method="get" action="{% url 'agenda:agendar_confirmar' %}" class="pilha">
+    <input type="hidden" name="dia" value="{{ dia_iso }}">
+    {% if preferido %}<input type="hidden" name="m" value="{{ preferido.pk }}">{% endif %}
+    {% for periodo, opcoes in periodos.items %}
+      <fieldset>
+        <legend>{{ periodo }} ({{ opcoes|length }} horário{{ opcoes|length|pluralize }})</legend>
+        <div class="opcoes opcoes--grade">
+          {% for opcao in opcoes %}
+            <label class="opcao" for="h-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+              <input type="radio" name="inicio" value="{{ opcao.valor }}" id="h-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" required>
+              <span class="opcao__texto">
+                {{ opcao.rotulo }}
+                <span class="opcao__detalhe">
+                  {% if preferido %}com {{ preferido.nome }}{% elif opcao.quantos == 1 %}com {{ opcao.nomes }}{% else %}{{ opcao.quantos }} massoterapeutas livres{% endif %}
+                </span>
+              </span>
+            </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+    {% endfor %}
+    <div class="acoes">
+      <button type="submit" class="botao botao--grande">Continuar</button>
+    </div>
+  </form>
+{% else %}
+  <p>Não há horários livres neste dia{% if preferido %} com {{ preferido.nome }}{% endif %}.</p>
+  <p><a class="botao botao--secundario" href="{% url 'agenda:agendar_dia' %}">Escolher outro dia</a></p>
+{% endif %}
+
+{% if pode_esperar %}
+<section class="cartao" aria-labelledby="titulo-espera">
+  <h2 id="titulo-espera">Lista de espera</h2>
+  {% if na_espera %}
+    <p>Você já está na lista de espera deste dia{% if na_espera.massoterapeuta %} com {{ na_espera.massoterapeuta.nome }}{% endif %}. Se alguém cancelar, você recebe um aviso.</p>
+  {% else %}
+    <p>{% if periodos %}Nenhum horário serve?{% else %}Quer ser avisado se alguém cancelar?{% endif %} Entre na lista de espera e receba um aviso no celular quando abrir uma vaga neste dia{% if preferido %} com {{ preferido.nome }}{% endif %}.</p>
+    <form method="post" action="{% url 'agenda:entrar_na_espera' %}">
+      {% csrf_token %}
+      <input type="hidden" name="dia" value="{{ dia_iso }}">
+      {% if preferido %}<input type="hidden" name="m" value="{{ preferido.pk }}">{% endif %}
+      <div class="acoes"><button type="submit" class="botao botao--secundario">Me avise se abrir vaga</button></div>
+    </form>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

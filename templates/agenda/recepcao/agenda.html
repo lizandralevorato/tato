@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Agenda da unidade: {{ dia|dia }}{% endblock %}
+{% block conteudo %}
+<h1>Agenda da unidade</h1>
+<nav class="navegacao-dias" aria-label="Trocar o dia">
+  <a class="botao botao--secundario" href="?dia={{ anterior.isoformat }}">Dia anterior</a>
+  <p class="destaque-grande">{{ dia|dia|capfirst }}</p>
+  <a class="botao botao--secundario" href="?dia={{ seguinte.isoformat }}">Dia seguinte</a>
+  {% if not eh_hoje %}<a href="?">Voltar para hoje</a>{% endif %}
+</nav>
+
+<p><a class="botao" href="{% url 'agenda:recepcao_agendar' %}?dia={{ dia.isoformat }}">Agendar ou encaixar alguém</a></p>
+
+{% for coluna in colunas %}
+  <section aria-labelledby="m-{{ coluna.massoterapeuta.pk }}" class="pilha">
+    <h2 id="m-{{ coluna.massoterapeuta.pk }}">{{ coluna.massoterapeuta.nome }}</h2>
+    <p class="texto-suave">{{ coluna.livres }} horário{{ coluna.livres|pluralize }} livre{{ coluna.livres|pluralize }} neste dia.</p>
+    {% if coluna.agendamentos %}
+      <div class="tabela-rolavel" role="region" aria-labelledby="cap-{{ coluna.massoterapeuta.pk }}" tabindex="0">
+        <table>
+          <caption id="cap-{{ coluna.massoterapeuta.pk }}">Agendamentos de {{ coluna.massoterapeuta.nome }}</caption>
+          <thead>
+            <tr><th scope="col">Horário</th><th scope="col">Colaborador</th><th scope="col">Situação</th><th scope="col">Ações</th></tr>
+          </thead>
+          <tbody>
+            {% for ag in coluna.agendamentos %}
+              <tr>
+                <th scope="row">{{ ag.inicio|hora }}</th>
+                <td>{{ ag.colaborador.nome }}{% if ag.origem == "encaixe" %} <span class="texto-suave">(encaixe)</span>{% endif %}</td>
+                <td>{% status ag %}</td>
+                <td>
+                  <div class="agenda__linha">
+                    <a href="{% url 'agenda:recepcao_agendamento' ag.pk %}">Detalhes<span class="sr-only"> de {{ ag.inicio|hora }}, {{ ag.colaborador.nome }}</span></a>
+                    {% if ag.status == "agendado" or ag.status == "confirmado" %}
+                      <a href="{% url 'agenda:cancelar' ag.pk %}?de=recepcao">Cancelar<span class="sr-only"> {{ ag.inicio|hora }}, {{ ag.colaborador.nome }}</span></a>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p>Nenhum agendamento.</p>
+    {% endif %}
+  </section>
+{% empty %}
+  <p>Nenhum massoterapeuta atendendo. <a href="{% url 'agenda:pessoa_nova' %}">Cadastrar massoterapeuta</a>.</p>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,27 @@
+{% load static %}<!doctype html>
+{# Página guardada no aparelho para quando não há internet. Não usa base.html para não guardar dados da pessoa. #}
+<html lang="pt-BR" class="tema-sistema">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Sem conexão | Agenda de Massagem</title>
+  <meta name="description" content="Sem conexão com a internet. Confira o Wi-Fi ou os dados móveis e tente de novo.">
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/componentes.css' %}">
+</head>
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+  <div class="faixa-marca" aria-hidden="true"></div>
+  <main id="conteudo" class="principal" tabindex="-1">
+    <h1>Sem conexão com a internet</h1>
+    <p class="introducao">Não foi possível abrir esta página agora.</p>
+    <ul>
+      <li>Confira se o Wi-Fi ou os dados móveis estão ligados.</li>
+      <li>Depois, tente de novo.</li>
+    </ul>
+    <p><a class="botao botao--grande" href="/">Tentar de novo</a></p>
+  </main>
+</body>
+</html>

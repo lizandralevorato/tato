@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block titulo %}{% if comunicado %}Editar comunicado{% else %}Novo comunicado{% endif %}{% endblock %}
+{% block conteudo %}
+<p><a href="{% url 'comunicados:gerenciar' %}">Voltar para Comunicados</a></p>
+<h1>{% if comunicado %}Editar comunicado{% else %}Novo comunicado{% endif %}</h1>
+<p class="introducao">Escreva frases curtas e diretas: muitas pessoas vão ouvir o texto pelo leitor de tela.</p>
+
+{% include "componentes/resumo_erros.html" %}
+
+<form method="post" class="cartao" novalidate>
+  {% csrf_token %}
+  {% include "componentes/campo.html" with campo=form.titulo %}
+  {% include "componentes/campo.html" with campo=form.texto %}
+  {% include "componentes/grupo_opcoes.html" with campo=form.publico %}
+  {% include "componentes/campo.html" with campo=form.unidade %}
+  {% include "componentes/verificacao.html" with campo=form.ativo %}
+  {% include "componentes/verificacao.html" with campo=form.avisar %}
+  <div class="acoes"><button type="submit" class="botao botao--grande">Salvar</button></div>
+</form>
+{% endblock %}

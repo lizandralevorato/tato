@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Agendar: confirme{% endblock %}
+{% block conteudo %}
+<p class="texto-suave">Passo 3 de 3</p>
+<h1>Confirme sua massagem</h1>
+
+<div class="cartao cartao--destaque">
+  <p class="destaque-grande">{{ descricao_dia|capfirst }}, às {{ hora }}</p>
+  <p>Com {{ massoterapeuta.nome }} · {{ duracao }} minutos</p>
+</div>
+
+{% if politica.checkin_prazo_min %}
+  {# Regra com consequência: fica fora do .secundario para aparecer no modo simplificado. #}
+  <p class="mensagem mensagem--info">
+    <span class="mensagem__icone" aria-hidden="true">i</span>
+    <span>
+      {% if checkin_ja_aberto %}
+        O check-in já vai ficar feito, porque falta pouco para a massagem.
+      {% else %}
+        No dia, faça o check-in entre {{ checkin_abre|hora }} e {{ checkin_prazo|hora }}. Sem check-in até {{ checkin_limite|hora }}, a reserva é liberada para outra pessoa. Você vai receber um lembrete.
+      {% endif %}
+    </span>
+  </p>
+{% endif %}
+
+<ul class="secundario">
+  <li>Chegue no horário: a tolerância é de {{ politica.tolerancia_min }} minutos.</li>
+  <li>Se não puder ir, cancele até {{ politica.antecedencia_cancelamento_min }} minutos antes.</li>
+</ul>
+
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="inicio" value="{{ inicio.isoformat }}">
+  <input type="hidden" name="m" value="{{ massoterapeuta.pk }}">
+  <div class="acoes">
+    <button type="submit" class="botao botao--grande">Confirmar agendamento</button>
+    <a class="botao botao--secundario botao--grande" href="{% url 'agenda:agendar_horario' inicio.date.isoformat %}">Voltar e escolher outro horário</a>
+  </div>
+</form>
+{% endblock %}

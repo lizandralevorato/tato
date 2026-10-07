@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block titulo %}Acessibilidade deste site{% endblock %}
+{% block descricao %}Declaração de acessibilidade da Agenda de Massagem: WCAG 2.2, leitores de tela, texto ampliado, alto contraste e Libras.{% endblock %}
+{% block conteudo %}
+<h1>Acessibilidade deste site</h1>
+<p class="introducao">
+  Este site foi feito para ser usado por todas as pessoas, incluindo pessoas cegas ou com baixa visão.
+</p>
+
+<section class="pilha" aria-labelledby="a-meta">
+  <h2 id="a-meta">Nosso compromisso</h2>
+  <ul>
+    <li>Seguimos as diretrizes WCAG 2.2, nível AA, e o nível AAA nas telas principais (contraste de cores e tamanho dos botões).</li>
+    <li>Seguimos a Lei Brasileira de Inclusão (Lei 13.146/2015) e o modelo eMAG.</li>
+    <li>O site é testado com TalkBack (Android), VoiceOver (iPhone), NVDA (Windows) e só com o teclado.</li>
+    <li>O site é testado com as pessoas que usam o site todos os dias, incluindo os massoterapeutas.</li>
+  </ul>
+</section>
+
+<section class="pilha" aria-labelledby="a-recursos">
+  <h2 id="a-recursos">Recursos disponíveis</h2>
+  <ul>
+    <li>Texto de 100% até 250%, sem precisar de zoom, e também com zoom do navegador.</li>
+    <li>Cores claras, escuras e de alto contraste.</li>
+    <li>Letra de alta legibilidade e espaçamento ampliado.</li>
+    <li>Modo simplificado, com menos informação por tela.</li>
+    <li>Avisos falados, vibração e som quando alguém chega ou cancela.</li>
+    <li>Sem limite de tempo para preencher nada e sem CAPTCHA.</li>
+  </ul>
+  {% if user.is_authenticated %}<p><a href="{% url 'contas:preferencias' %}">Ajustar minhas preferências</a></p>{% endif %}
+</section>
+
+<section class="pilha" aria-labelledby="a-limites">
+  <h2 id="a-limites">Limitações conhecidas</h2>
+  <ul>
+    <li>A vibração não funciona no iPhone, por limitação do próprio aparelho.</li>
+    <li>Os avisos falados dependem das vozes em português instaladas no aparelho.</li>
+  </ul>
+</section>
+
+<section class="pilha" aria-labelledby="a-contato">
+  <h2 id="a-contato">Encontrou uma barreira?</h2>
+  <p>Conte para a recepção o que aconteceu, em qual tela e qual aparelho você usa. Vamos corrigir.</p>
+</section>
+{% endblock %}

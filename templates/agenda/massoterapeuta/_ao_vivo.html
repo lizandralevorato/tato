@@ -1,0 +1,73 @@
+{% load agenda %}
+{# IDs estáveis preservam o foco quando esta parte é atualizada. #}
+<span hidden id="texto-falado-atual" data-texto-falado="{{ texto_falado }}"></span>
+
+<section class="cartao cartao--destaque" aria-labelledby="titulo-proximo">
+  <h2 id="titulo-proximo">Próximo atendimento</h2>
+  {% if proximo %}
+    <p class="destaque-grande">{{ proximo.inicio|hora }}, {{ proximo.colaborador.nome }}</p>
+    <p>{% status proximo %}</p>
+    <p>
+      {% if proximo.status == "chegou" %}
+        Chegou às {{ proximo.chegada_em|hora }}.
+      {% elif proximo_pode_atender %}
+        O horário já começou.
+      {% else %}
+        Começa <span data-contagem="{{ proximo.inicio.isoformat }}">{{ proximo.inicio|minutos_ate }}</span>.
+      {% endif %}
+    </p>
+    {% if proximo_pode_atender or proximo_pode_faltar %}
+      <div class="acoes">
+        {% if proximo_pode_atender %}
+          <form method="post" action="{% url 'agenda:atendido' proximo.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="botao" id="proximo-atendido">Atendido<span class="sr-only">: {{ proximo.inicio|hora }}, {{ proximo.colaborador.nome }}</span></button>
+          </form>
+        {% endif %}
+        {% if proximo_pode_faltar %}
+          <form method="post" action="{% url 'agenda:faltou' proximo.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="botao botao--perigo" id="proximo-faltou">Faltou<span class="sr-only">: {{ proximo.inicio|hora }}, {{ proximo.colaborador.nome }}</span></button>
+          </form>
+        {% endif %}
+      </div>
+    {% elif proximo.status != "chegou" %}
+      <p class="ajuda secundario">Se a pessoa não vier, você poderá marcar falta a partir das {{ proximo_falta_a_partir|hora }}.</p>
+    {% endif %}
+  {% else %}
+    <p class="destaque-grande">Nenhum atendimento pela frente hoje.</p>
+  {% endif %}
+</section>
+
+<section aria-labelledby="titulo-hoje" class="pilha">
+  <h2 id="titulo-hoje">Hoje: {{ total_pendentes }} atendimento{{ total_pendentes|pluralize }} pela frente</h2>
+  {% if itens %}
+    <ol class="agenda">
+      {% for item in itens %}
+        <li class="agenda__item{% if item.em_aberto %} agenda__item--em-aberto{% endif %}">
+          <div class="agenda__linha">
+            <span class="agenda__hora">{{ item.ag.inicio|hora }}</span>
+            <span class="agenda__nome">{{ item.ag.colaborador.nome }}</span>
+          </div>
+          <div class="agenda__linha">
+            {% status item.ag %}
+            {% if item.pode_atender %}
+              <form method="post" action="{% url 'agenda:atendido' item.ag.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="botao botao--secundario" id="atendido-{{ item.ag.pk }}">Atendido<span class="sr-only">: {{ item.ag.inicio|hora }}, {{ item.ag.colaborador.nome }}</span></button>
+              </form>
+            {% endif %}
+            {% if item.pode_faltar %}
+              <form method="post" action="{% url 'agenda:faltou' item.ag.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="botao botao--perigo" id="faltou-{{ item.ag.pk }}">Faltou<span class="sr-only">: {{ item.ag.inicio|hora }}, {{ item.ag.colaborador.nome }}</span></button>
+              </form>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p>Ninguém agendado hoje até agora. Novos agendamentos aparecem aqui sozinhos e são avisados.</p>
+  {% endif %}
+</section>

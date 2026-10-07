@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block titulo %}Painel: {{ de|date:"d/m/Y" }} a {{ ate|date:"d/m/Y" }}{% endblock %}
+{% block conteudo %}
+<h1>Painel do benefício</h1>
+<p class="introducao">
+  De {{ de|date:"j \d\e F"|lower }} a {{ ate|date:"j \d\e F \d\e Y"|lower }}{% if massoterapeuta %}, com {{ massoterapeuta.nome }}{% endif %}{% if unidade %}, {{ unidade.nome }}{% endif %}.
+</p>
+
+{% include "painel/_filtros.html" %}
+
+{% if not dados %}
+  <p>Nenhuma unidade cadastrada.</p>
+{% else %}
+{% with g=dados.geral %}
+<section aria-labelledby="titulo-numeros">
+  <h2 id="titulo-numeros">Resumo</h2>
+  <ul class="indicadores">
+    <li class="cartao"><span class="indicador__valor">{% if g.ocupacao is not None %}{{ g.ocupacao }}%{% else %}Sem dados{% endif %}</span> <span class="indicador__rotulo">de ocupação ({{ g.reservados }} de {{ g.oferecidos }} horários oferecidos)</span></li>
+    <li class="cartao"><span class="indicador__valor">{{ g.realizados }}</span> <span class="indicador__rotulo">massagens feitas</span></li>
+    <li class="cartao"><span class="indicador__valor">{{ dados.usuarios_unicos }}</span> <span class="indicador__rotulo">pessoa{{ dados.usuarios_unicos|pluralize }} diferente{{ dados.usuarios_unicos|pluralize }} atendida{{ dados.usuarios_unicos|pluralize }}</span></li>
+    <li class="cartao"><span class="indicador__valor">{% if g.taxa_faltas is not None %}{{ g.taxa_faltas }}%{% else %}0%{% endif %}</span> <span class="indicador__rotulo">de faltas ({{ g.faltas }} falta{{ g.faltas|pluralize }})</span></li>
+    <li class="cartao"><span class="indicador__valor">{{ g.cancelados }}</span> <span class="indicador__rotulo">cancelamento{{ g.cancelados|pluralize }}</span></li>
+    <li class="cartao"><span class="indicador__valor">{{ g.liberados }}</span> <span class="indicador__rotulo">reserva{{ g.liberados|pluralize }} liberada{{ g.liberados|pluralize }} sem check-in</span></li>
+    <li class="cartao"><span class="indicador__valor">{{ g.encaixes }}</span> <span class="indicador__rotulo">pela recepção ou encaixe</span></li>
+  </ul>
+  <p class="ajuda">Ocupação = horários reservados (sem contar cancelados e liberados) dividido pelos horários oferecidos. Os horários oferecidos são calculados com a grade semanal atual de cada massoterapeuta, menos folgas e pausas.</p>
+</section>
+{% endwith %}
+
+<section aria-labelledby="titulo-por-m" class="pilha">
+  <h2 id="titulo-por-m">Por massoterapeuta</h2>
+  <div class="tabela-rolavel" role="region" aria-labelledby="cap-por-m" tabindex="0">
+    <table>
+      <caption id="cap-por-m">Números por massoterapeuta no período</caption>
+      <thead>
+        <tr>
+          <th scope="col">Massoterapeuta</th><th scope="col">Oferecidos</th><th scope="col">Reservados</th>
+          <th scope="col">Ocupação</th><th scope="col">Atendidos</th><th scope="col">Faltas</th>
+          <th scope="col">Cancelados</th><th scope="col">Liberados</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for linha in dados.por_massoterapeuta %}
+          <tr>
+            <th scope="row">{{ linha.rotulo }}</th><td>{{ linha.oferecidos }}</td><td>{{ linha.reservados }}</td>
+            <td>{% if linha.ocupacao is not None %}{{ linha.ocupacao }}%{% else %}Sem horários{% endif %}</td>
+            <td>{{ linha.realizados }}</td><td>{{ linha.faltas }}</td><td>{{ linha.cancelados }}</td><td>{{ linha.liberados }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="titulo-semana" class="pilha">
+  <h2 id="titulo-semana">Por semana</h2>
+  <div class="tabela-rolavel" role="region" aria-labelledby="cap-semana" tabindex="0">
+    <table>
+      <caption id="cap-semana">Massagens reservadas por semana</caption>
+      <thead>
+        <tr><th scope="col">Semana</th><th scope="col">Reservados</th><th scope="col">Atendidos</th><th scope="col">Faltas</th><th scope="col">Cancelados</th><th scope="col">Ocupação</th></tr>
+      </thead>
+      <tbody>
+        {% for linha in dados.por_semana %}
+          <tr>
+            <th scope="row">{{ linha.rotulo }}</th>
+            <td>
+              <span class="barra-valor">
+                <span class="barra" aria-hidden="true"><span style="width: {% widthratio linha.reservados maior_semana 100 %}%"></span></span>
+                {{ linha.reservados }}
+              </span>
+            </td>
+            <td>{{ linha.realizados }}</td><td>{{ linha.faltas }}</td><td>{{ linha.cancelados }}</td>
+            <td>{% if linha.ocupacao is not None %}{{ linha.ocupacao }}%{% else %}Sem horários{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="titulo-exportar" class="cartao">
+  <h2 id="titulo-exportar">Baixar planilhas</h2>
+  <p>Arquivos CSV, que abrem no Excel, no Google Planilhas ou no LibreOffice.</p>
+  <ul>
+    <li><a href="{% url 'painel:csv_resumo' %}?{{ consulta }}">Resumo por massoterapeuta (CSV)</a></li>
+    <li><a href="{% url 'painel:csv_agendamentos' %}?{{ consulta }}">Todos os agendamentos do período (CSV)</a></li>
+  </ul>
+  <p><a href="{% url 'painel:historico' %}?{{ consulta }}">Ver o histórico de alterações do período</a></p>
+</section>
+{% endif %}
+{% endblock %}

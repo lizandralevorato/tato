@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Comunicados{% endblock %}
+{% block conteudo %}
+<h1>Comunicados</h1>
+{% if user.eh_equipe %}<p><a href="{% url 'comunicados:gerenciar' %}">Publicar ou editar comunicados</a></p>{% endif %}
+
+{% if itens %}
+  <p class="introducao">{% if total_novos %}{{ total_novos }} comunicado{{ total_novos|pluralize }} novo{{ total_novos|pluralize }}.{% else %}Nenhum comunicado novo.{% endif %}</p>
+  <ul class="lista-simples">
+    {% for item in itens %}
+      <li>
+        <article class="cartao{% if item.novo %} cartao--destaque{% endif %}" aria-labelledby="c-{{ item.c.pk }}">
+          <h2 id="c-{{ item.c.pk }}">{% if item.novo %}<span class="status status--chegou">Novo</span> {% endif %}{{ item.c.titulo }}</h2>
+          <p class="texto-suave">{{ item.c.publicado_em|dia|capfirst }}{% if item.c.autor %}, por {{ item.c.autor.nome }}{% endif %}</p>
+          <div class="texto-longo">{{ item.c.texto|linebreaks }}</div>
+        </article>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Nenhum comunicado por enquanto.</p>
+{% endif %}
+{% endblock %}

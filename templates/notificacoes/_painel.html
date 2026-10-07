@@ -1,0 +1,23 @@
+{% comment %}
+Painel para ativar notificações neste aparelho. O estado real só é conhecido
+no navegador, então push.js preenche o texto e mostra os botões certos.
+Parâmetros: titulo, texto, ocultar_se_ativo (esconde o painel quando já está ativo).
+{% endcomment %}
+<section class="cartao painel-push" aria-labelledby="painel-push-titulo"
+         data-painel-push
+         data-chave-publica="{{ vapid_chave_publica }}"
+         data-url-inscrever="{% url 'notificacoes:inscrever' %}"
+         data-url-remover="{% url 'notificacoes:remover' %}"
+         data-url-teste="{% url 'notificacoes:teste' %}"
+         {% if ocultar_se_ativo %}data-ocultar-se-ativo hidden{% endif %}>
+  <h2 id="painel-push-titulo">{{ titulo|default:"Notificações neste aparelho" }}</h2>
+  {% if texto %}<p>{{ texto }}</p>{% endif %}
+  <p data-push-estado role="status">
+    <noscript>Para receber notificações, o JavaScript precisa estar ligado.</noscript>
+  </p>
+  <div class="acoes">
+    <button type="button" class="botao" data-push-ativar hidden>Ativar notificações neste aparelho</button>
+    <button type="button" class="botao botao--secundario" data-push-testar hidden>Enviar notificação de teste</button>
+    <button type="button" class="botao botao--perigo" data-push-desativar hidden>Desativar neste aparelho</button>
+  </div>
+</section>

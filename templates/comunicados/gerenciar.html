@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Publicar comunicados{% endblock %}
+{% block conteudo %}
+<h1>Publicar comunicados</h1>
+<p class="introducao">Recados da empresa para os massoterapeutas ou para todas as pessoas. Aparecem em Comunicados e, se você quiser, chegam como aviso no celular.</p>
+<p><a class="botao" href="{% url 'comunicados:novo' %}">Novo comunicado</a></p>
+
+{% if comunicados %}
+  <div class="tabela-rolavel" role="region" aria-labelledby="cap-comunicados" tabindex="0">
+    <table>
+      <caption id="cap-comunicados">Comunicados</caption>
+      <thead>
+        <tr><th scope="col">Título</th><th scope="col">Para quem</th><th scope="col">Publicado em</th><th scope="col">Situação</th><th scope="col">Ações</th></tr>
+      </thead>
+      <tbody>
+        {% for c in comunicados %}
+          <tr>
+            <th scope="row">{{ c.titulo }}</th>
+            <td>{{ c.get_publico_display }}{% if c.unidade %}, {{ c.unidade.nome }}{% endif %}</td>
+            <td>{{ c.publicado_em|dia|capfirst }}</td>
+            <td>{% if c.ativo %}Publicado{% else %}Escondido{% endif %}</td>
+            <td>
+              <div class="agenda__linha">
+                <a href="{% url 'comunicados:editar' c.pk %}">Editar<span class="sr-only"> {{ c.titulo }}</span></a>
+                <a href="{% url 'comunicados:excluir' c.pk %}">Excluir<span class="sr-only"> {{ c.titulo }}</span></a>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p>Nenhum comunicado publicado ainda.</p>
+{% endif %}
+{% endblock %}

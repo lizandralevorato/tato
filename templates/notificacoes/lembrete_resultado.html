@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block titulo %}{% if ok %}Resposta registrada{% else %}Não foi possível{% endif %}{% endblock %}
+{% block conteudo %}
+<h1>{% if ok %}Resposta registrada{% else %}Não foi possível{% endif %}</h1>
+<p class="mensagem mensagem--{% if ok %}sucesso{% else %}erro{% endif %}" tabindex="-1" data-focar-ao-carregar data-mensagem>
+  <span class="mensagem__icone" aria-hidden="true">{% if ok %}✔{% else %}✖{% endif %}</span>
+  <span>{{ mensagem }}</span>
+</p>
+<p><a class="botao botao--secundario" href="{% url 'agenda:meus_agendamentos' %}">Ver meus agendamentos</a></p>
+{% endblock %}

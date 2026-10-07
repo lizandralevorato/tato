@@ -1,0 +1,12 @@
+<fieldset{% if campo.help_text %} aria-describedby="{{ campo.auto_id }}-ajuda"{% endif %}>
+  <legend>{{ campo.label|capfirst }}</legend>
+  {% if campo.help_text %}<p class="ajuda" id="{{ campo.auto_id }}-ajuda">{{ campo.help_text }}</p>{% endif %}
+  <div class="opcoes{% if grade %} opcoes--grade{% endif %}">
+    {% for opcao in campo %}
+      <label class="opcao" for="{{ opcao.id_for_label }}">
+        {{ opcao.tag }}
+        <span class="opcao__texto">{{ opcao.choice_label }}</span>
+      </label>
+    {% endfor %}
+  </div>
+</fieldset>

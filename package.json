@@ -1,0 +1,13 @@
+{
+  "name": "agenda-massagem",
+  "private": true,
+  "description": "Ferramentas de Node só para checagens (Lighthouse CI). O site é Django.",
+  "type": "commonjs",
+  "scripts": {
+    "lighthouse": "lhci autorun"
+  },
+  "devDependencies": {
+    "@lhci/cli": "^0.15.1",
+    "puppeteer-core": "^25.12.0"
+  }
+}

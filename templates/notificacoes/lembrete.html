@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Check-in da massagem{% endblock %}
+{% block conteudo %}
+{% if pendente %}
+  <h1>Faça o check-in da massagem</h1>
+  <div class="cartao cartao--destaque">
+    <p class="destaque-grande">{{ descricao|capfirst }}</p>
+    <p>Faça o check-in até <strong>{{ prazo|hora }}</strong>. Sem check-in até {{ limite|hora }}, a reserva é liberada para outra pessoa.</p>
+  </div>
+  {% if checkin_aberto %}
+    <form method="post" class="acoes">
+      <button type="submit" name="acao" value="vou" class="botao botao--grande">Fazer check-in</button>
+      <button type="submit" name="acao" value="nao-vou" class="botao botao--perigo botao--grande">Não vou<span class="sr-only">, cancelar a massagem</span></button>
+    </form>
+  {% else %}
+    <p>O check-in abre às {{ abre|hora }}. Você vai receber um lembrete nesse horário.</p>
+    <form method="post" class="acoes">
+      <button type="submit" name="acao" value="nao-vou" class="botao botao--perigo botao--grande">Não vou<span class="sr-only">, cancelar a massagem</span></button>
+    </form>
+  {% endif %}
+{% else %}
+  <h1>Situação da massagem</h1>
+  <div class="cartao cartao--destaque">
+    <p class="destaque-grande">{{ descricao|capfirst }}</p>
+    <p>{% status agendamento %}</p>
+  </div>
+  <p><a href="{% url 'agenda:meus_agendamentos' %}">Ver meus agendamentos</a></p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Agendar ou encaixar{% if colaborador %}: {{ colaborador.nome }}{% endif %}{% endblock %}
+{% block conteudo %}
+<h1>Agendar ou encaixar alguém</h1>
+
+{% if not colaborador %}
+  <section class="cartao" aria-labelledby="titulo-busca">
+    <h2 id="titulo-busca">1. Para quem é a massagem?</h2>
+    <form method="get" role="search" aria-labelledby="titulo-busca">
+      {% if dia %}<input type="hidden" name="dia" value="{{ dia.isoformat }}">{% endif %}
+      <div class="campo">
+        <label for="busca">Nome ou e-mail</label>
+        <input type="text" id="busca" name="q" value="{{ busca }}" autocomplete="off">
+      </div>
+      <div class="acoes"><button type="submit" class="botao">Procurar</button></div>
+    </form>
+  </section>
+
+  {% if busca %}
+    <section aria-labelledby="titulo-resultados" class="pilha">
+      <h2 id="titulo-resultados">{{ resultados|length }} pessoa{{ resultados|length|pluralize }} encontrada{{ resultados|length|pluralize }}</h2>
+      {% if resultados %}
+        <ul class="lista-dias">
+          {% for p in resultados %}
+            <li>
+              <a href="?colaborador={{ p.pk }}{% if dia %}&dia={{ dia.isoformat }}{% endif %}">
+                <span>{{ p.nome }}</span>
+                <span class="detalhe">{{ p.email }}</span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>Ninguém com esse nome ou e-mail. <a href="{% url 'agenda:pessoa_nova' %}">Cadastrar pessoa</a>.</p>
+      {% endif %}
+    </section>
+  {% endif %}
+
+{% else %}
+  <div class="cartao cartao--destaque">
+    <p class="destaque-grande">{{ colaborador.nome }}</p>
+    <p>{{ colaborador.email }} · <a href="?{% if dia %}dia={{ dia.isoformat }}{% endif %}">Trocar a pessoa</a></p>
+    {% if uso %}<p>Já usou {{ uso.usadas }} de {{ uso.maximo }} massagens na semana desse dia.</p>{% endif %}
+  </div>
+
+  <section class="cartao" aria-labelledby="titulo-dia">
+    <h2 id="titulo-dia">2. Massoterapeuta e dia</h2>
+    <form method="get">
+      <input type="hidden" name="colaborador" value="{{ colaborador.pk }}">
+      <div class="campo">
+        <label for="escolha-m">Massoterapeuta</label>
+        <select id="escolha-m" name="m">
+          <option value="">Qualquer um</option>
+          {% for m in massoterapeutas %}
+            <option value="{{ m.pk }}"{% if escolhido and escolhido.pk == m.pk %} selected{% endif %}>{{ m.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="campo">
+        <label for="escolha-dia">Dia</label>
+        <input type="date" id="escolha-dia" name="dia" value="{% if dia %}{{ dia.isoformat }}{% else %}{{ hoje.isoformat }}{% endif %}" min="{{ hoje.isoformat }}" required>
+      </div>
+      <div class="acoes"><button type="submit" class="botao botao--secundario">Ver horários</button></div>
+    </form>
+  </section>
+
+  {% if dia %}
+    <section class="pilha" aria-labelledby="titulo-horario">
+      <h2 id="titulo-horario">3. Horário em {{ dia|dia }}</h2>
+      <form method="post" class="pilha">
+        {% csrf_token %}
+        <input type="hidden" name="colaborador" value="{{ colaborador.pk }}">
+        <input type="hidden" name="dia" value="{{ dia.isoformat }}">
+        {% if escolhido %}<input type="hidden" name="m" value="{{ escolhido.pk }}">{% endif %}
+        <fieldset>
+          <legend>Escolha o horário</legend>
+          <div class="opcoes opcoes--grade">
+            {% for h in horarios %}
+              <label class="opcao" for="h-{{ forloop.counter }}">
+                <input type="radio" name="horario" value="{{ h.valor }}" id="h-{{ forloop.counter }}" required>
+                <span class="opcao__texto">{{ h.rotulo }}<span class="opcao__detalhe">com {{ h.m.nome }}</span></span>
+              </label>
+            {% endfor %}
+            <label class="opcao" for="h-encaixe">
+              <input type="radio" name="horario" value="encaixe" id="h-encaixe" required{% if not horarios %} checked{% endif %}>
+              <span class="opcao__texto">Encaixe em outro horário<span class="opcao__detalhe">Fora da grade, se a sessão couber</span></span>
+            </label>
+          </div>
+          {% if not horarios %}<p>Não há horários livres na grade deste dia{% if escolhido %} com {{ escolhido.nome }}{% endif %}. Você ainda pode fazer um encaixe.</p>{% endif %}
+        </fieldset>
+
+        <fieldset class="cartao">
+          <legend>Encaixe</legend>
+          <p class="ajuda" id="ajuda-encaixe">Preencha só se escolheu "Encaixe em outro horário".</p>
+          {% if not escolhido %}
+            <div class="campo">
+              <label for="m-encaixe">Massoterapeuta do encaixe</label>
+              <select id="m-encaixe" name="m_encaixe" aria-describedby="ajuda-encaixe">
+                {% for m in massoterapeutas %}<option value="{{ m.pk }}">{{ m.nome }}</option>{% endfor %}
+              </select>
+            </div>
+          {% endif %}
+          <div class="campo">
+            <label for="hora-encaixe">Hora do encaixe</label>
+            <input type="time" id="hora-encaixe" name="hora_encaixe" aria-describedby="ajuda-encaixe">
+          </div>
+        </fieldset>
+
+        <div class="campo">
+          <label class="opcao opcao--verificacao" for="excecao">
+            <input type="checkbox" name="excecao" id="excecao" value="on" aria-describedby="ajuda-excecao">
+            <span class="opcao__texto">
+              Exceção às regras do benefício
+              <span class="opcao__detalhe" id="ajuda-excecao">Permite passar do limite da semana, ter duas no mesmo dia ou agendar além do prazo. Fica registrado no histórico.</span>
+            </span>
+          </label>
+        </div>
+
+        <div class="acoes"><button type="submit" class="botao botao--grande">Agendar para {{ colaborador.first_name|default:colaborador.nome }}</button></div>
+      </form>
+    </section>
+  {% endif %}
+{% endif %}
+{% endblock %}

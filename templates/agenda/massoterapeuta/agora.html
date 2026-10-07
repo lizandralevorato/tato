@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}Minha agenda{% endblock %}
+{% block conteudo %}
+<h1 tabindex="-1">Minha agenda</h1>
+
+{% if comunicados_nao_lidos %}
+  <p class="mensagem mensagem--info"><span class="mensagem__icone" aria-hidden="true">i</span>
+    <span>Você tem {{ comunicados_nao_lidos }} comunicado{{ comunicados_nao_lidos|pluralize }} novo{{ comunicados_nao_lidos|pluralize }} da empresa. <a href="{% url 'comunicados:lista' %}">Ler comunicados</a></span></p>
+{% endif %}
+
+<div class="acoes">
+  <button type="button" class="botao botao--grande" data-ativar-avisos hidden>Ativar avisos sonoros nesta tela</button>
+  <button type="button" class="botao botao--secundario" data-ouvir="texto-falado-atual" hidden>Ouvir agenda de hoje</button>
+  <button type="button" class="botao botao--secundario" data-parar-fala hidden>Parar de falar</button>
+</div>
+
+{% include "notificacoes/_painel.html" with titulo="Avisos com o celular bloqueado" texto="Ative para saber quando alguém chega ou cancela, mesmo com a tela desligada." ocultar_se_ativo=True %}
+
+<div id="agenda-ao-vivo"
+     data-url-estado="{% url 'agenda:estado_json' %}"
+     data-url-parcial="{% url 'agenda:agora_parcial' %}">
+  {% include "agenda/massoterapeuta/_ao_vivo.html" %}
+</div>
+
+<section class="cartao" aria-labelledby="titulo-pausa">
+  <h2 id="titulo-pausa">Pausa rápida</h2>
+  <p>Para sair da sala sem receber novos agendamentos. Quem já está marcado continua marcado.</p>
+  <form method="post" action="{% url 'agenda:pausar' %}">
+    {% csrf_token %}
+    <div class="acoes">
+      <button type="submit" name="minutos" value="5" class="botao botao--secundario">Pausar 5 minutos</button>
+      <button type="submit" name="minutos" value="10" class="botao botao--secundario">Pausar 10 minutos</button>
+      <button type="submit" name="minutos" value="15" class="botao botao--secundario">Pausar 15 minutos</button>
+    </div>
+  </form>
+</section>
+
+{{ estado_inicial|json_script:"estado-inicial" }}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/agenda-ao-vivo.js' %}" defer></script>
+{% endblock %}

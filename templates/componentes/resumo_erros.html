@@ -1,0 +1,13 @@
+{% if form.errors %}
+  <div class="resumo-erros" tabindex="-1" data-focar-ao-carregar role="region" aria-labelledby="resumo-erros-titulo">
+    <h2 id="resumo-erros-titulo">
+      {% with total=form.errors|length %}Há {{ total }} problema{{ total|pluralize }} para corrigir{% endwith %}
+    </h2>
+    <ul>
+      {% for erro in form.non_field_errors %}<li>{{ erro }}</li>{% endfor %}
+      {% for campo in form %}{% for erro in campo.errors %}
+        <li><a href="#{{ campo.auto_id }}">{{ campo.label }}: {{ erro }}</a></li>
+      {% endfor %}{% endfor %}
+    </ul>
+  </div>
+{% endif %}

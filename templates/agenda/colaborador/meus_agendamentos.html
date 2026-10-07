@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Meus agendamentos{% endblock %}
+{% block conteudo %}
+<h1>Meus agendamentos</h1>
+
+{% if unidade %}
+  <p class="introducao">
+    {% if restantes %}
+      Você ainda pode agendar <strong>{{ restantes }} massage{{ restantes|pluralize:"m,ns" }}</strong> nesta semana.
+    {% else %}
+      Você já usou as massagens desta semana. Na próxima segunda-feira o limite recomeça.
+    {% endif %}
+  </p>
+  <p><a class="botao botao--grande" href="{% url 'agenda:agendar_dia' %}">Agendar massagem</a></p>
+{% endif %}
+
+{% include "notificacoes/_painel.html" with titulo="Lembretes no celular" texto="Receba o lembrete do check-in no celular, com os botões Fazer check-in e Não vou." ocultar_se_ativo=True %}
+
+<section aria-labelledby="titulo-proximos" class="pilha">
+  <h2 id="titulo-proximos">Próximos horários</h2>
+  {% if proximos %}
+    <ul class="lista-simples">
+      {% for item in proximos %}
+        <li class="cartao cartao--destaque">
+          <h3>{{ item.ag.inicio|dia|capfirst }}, às {{ item.ag.inicio|hora }}</h3>
+          <p>Com {{ item.ag.massoterapeuta.nome }} · {{ item.ag.massoterapeuta.duracao_sessao_min }} minutos</p>
+          <p>{% status item.ag %}</p>
+
+          {% if item.aguardando_checkin %}
+            <p class="mensagem mensagem--{% if item.pode_fazer_checkin %}aviso{% else %}info{% endif %}">
+              <span class="mensagem__icone" aria-hidden="true">{% if item.pode_fazer_checkin %}!{% else %}i{% endif %}</span>
+              <span>
+                {% if item.pode_fazer_checkin %}
+                  Faça o check-in até {{ item.checkin_prazo|hora }}. Sem check-in até {{ item.checkin_limite|hora }}, a reserva é liberada para outra pessoa.
+                {% else %}
+                  Check-in: das {{ item.checkin_abre|hora }} às {{ item.checkin_prazo|hora }} do dia da massagem. Sem check-in, a reserva é liberada.
+                {% endif %}
+              </span>
+            </p>
+          {% endif %}
+
+          {% if item.pode_fazer_checkin or item.pode_avisar_chegada or item.pode_cancelar %}
+            <div class="acoes">
+              {% if item.pode_fazer_checkin %}
+                <form method="post" action="{% url 'agenda:checkin' item.ag.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="botao">Fazer check-in<span class="sr-only"> para {{ item.descricao }}</span></button>
+                </form>
+              {% endif %}
+              {% if item.pode_avisar_chegada %}
+                <form method="post" action="{% url 'agenda:chegada' item.ag.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="botao{% if item.pode_fazer_checkin %} botao--secundario{% endif %}">Cheguei<span class="sr-only"> para a massagem das {{ item.ag.inicio|hora }}</span></button>
+                </form>
+              {% endif %}
+              {% if item.pode_cancelar %}
+                <a class="botao botao--perigo" href="{% url 'agenda:cancelar' item.ag.pk %}">Não vou<span class="sr-only">: cancelar {{ item.descricao }}</span></a>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          <p class="ajuda secundario">
+            {% if not item.pode_avisar_chegada and item.ag.status != "chegou" %}Na hora, use o botão "Cheguei" (aparece a partir das {{ item.chegada_abre|hora }}).{% endif %}
+            {% if item.pode_cancelar %}Cancelamento até {{ item.limite_cancelar|hora }}.{% endif %}
+          </p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Você não tem massagens marcadas.</p>
+  {% endif %}
+</section>
+
+{% if espera %}
+<section aria-labelledby="titulo-espera" class="pilha">
+  <h2 id="titulo-espera">Lista de espera</h2>
+  <ul class="lista-simples">
+    {% for item in espera %}
+      <li class="cartao">
+        <h3>{{ item.e.dia|dia|capfirst }}{% if item.e.massoterapeuta %}, com {{ item.e.massoterapeuta.nome }}{% endif %}</h3>
+        {% if item.livres %}
+          <p class="mensagem mensagem--sucesso"><span class="mensagem__icone" aria-hidden="true">✔</span>
+            <span>Abriu vaga: {{ item.livres }} horário{{ item.livres|pluralize }} livre{{ item.livres|pluralize }} agora.</span></p>
+        {% else %}
+          <p>Ainda sem vaga. Você recebe um aviso se alguém cancelar.</p>
+        {% endif %}
+        <div class="acoes">
+          {% if item.livres %}<a class="botao" href="{% url 'agenda:agendar_horario' item.e.dia.isoformat %}{% if item.e.massoterapeuta %}?m={{ item.e.massoterapeuta.pk }}{% endif %}">Ver horários<span class="sr-only"> de {{ item.e.dia|dia }}</span></a>{% endif %}
+          <form method="post" action="{% url 'agenda:sair_da_espera' item.e.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="botao botao--secundario">Sair da lista<span class="sr-only"> de espera de {{ item.e.dia|dia }}</span></button>
+          </form>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if historico %}
+<section aria-labelledby="titulo-historico" class="secundario pilha">
+  <h2 id="titulo-historico">Histórico recente</h2>
+  <ul class="lista-simples">
+    {% for ag in historico %}
+      <li>{{ ag.inicio|dia|capfirst }}, {{ ag.inicio|hora }}, com {{ ag.massoterapeuta.nome }}: {% status ag %}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if politica %}
+<section aria-labelledby="titulo-regras" class="cartao secundario">
+  <h2 id="titulo-regras">Regras do benefício</h2>
+  <ul>
+    <li>Até {{ politica.max_por_semana }} massagens por semana{% if politica.uma_por_dia %}, em dias diferentes{% endif %}.</li>
+    {% if politica.checkin_prazo_min %}<li>Faça o check-in até {{ politica.checkin_prazo_min }} minutos antes da massagem (tolerância de {{ politica.checkin_tolerancia_min }} minutos). Sem check-in, a reserva é liberada para outra pessoa.</li>{% endif %}
+    <li>Cancele até {{ politica.antecedencia_cancelamento_min }} minutos antes, para liberar o horário para outra pessoa.</li>
+    <li>Tolerância de atraso: {{ politica.tolerancia_min }} minutos.</li>
+    {% if politica.falta_conta_no_limite %}<li>Faltas contam no limite da semana.</li>{% endif %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

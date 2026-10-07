@@ -1,0 +1,9 @@
+<div class="campo">
+  <label class="opcao opcao--verificacao" for="{{ campo.id_for_label }}">
+    <input type="checkbox" name="{{ campo.html_name }}" id="{{ campo.id_for_label }}"{% if campo.value %} checked{% endif %}{% if campo.help_text %} aria-describedby="{{ campo.auto_id }}-ajuda"{% endif %}>
+    <span class="opcao__texto">
+      {{ campo.label|capfirst }}
+      {% if campo.help_text %}<span class="opcao__detalhe" id="{{ campo.auto_id }}-ajuda">{{ campo.help_text }}</span>{% endif %}
+    </span>
+  </label>
+</div>

@@ -1,0 +1,30 @@
+{% if erro %}<p class="mensagem mensagem--aviso"><span class="mensagem__icone" aria-hidden="true">!</span><span>{{ erro }}</span></p>{% endif %}
+<form method="get" class="cartao" aria-label="Filtrar período">
+  {% if acoes %}<input type="hidden" name="acao" value="{{ acao }}">{% endif %}
+  <div class="filtros">
+    <div class="campo">
+      <label for="filtro-de">De</label>
+      <input type="date" id="filtro-de" name="de" value="{{ de.isoformat }}">
+    </div>
+    <div class="campo">
+      <label for="filtro-ate">Até</label>
+      <input type="date" id="filtro-ate" name="ate" value="{{ ate.isoformat }}">
+    </div>
+    <div class="campo">
+      <label for="filtro-m">Massoterapeuta</label>
+      <select id="filtro-m" name="m">
+        <option value="">Todos</option>
+        {% for m in massoterapeutas %}<option value="{{ m.pk }}"{% if massoterapeuta and massoterapeuta.pk == m.pk %} selected{% endif %}>{{ m.nome }}</option>{% endfor %}
+      </select>
+    </div>
+    {% if unidades %}
+      <div class="campo">
+        <label for="filtro-unidade">Unidade</label>
+        <select id="filtro-unidade" name="unidade">
+          {% for u in unidades %}<option value="{{ u.pk }}"{% if unidade and unidade.pk == u.pk %} selected{% endif %}>{{ u.nome }}</option>{% endfor %}
+        </select>
+      </div>
+    {% endif %}
+  </div>
+  <div class="acoes"><button type="submit" class="botao botao--secundario">Mostrar</button></div>
+</form>

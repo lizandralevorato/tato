@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block titulo %}Preferências de acessibilidade{% endblock %}
+{% block conteudo %}
+{% if primeiro_acesso %}
+  <h1>Vamos ajustar o site para você</h1>
+  <p class="introducao">
+    Escolha como prefere ver e ouvir as informações. Você pode mudar isso a qualquer momento
+    em <strong>Preferências</strong>, no menu.
+  </p>
+{% else %}
+  <h1>Preferências de acessibilidade</h1>
+  <p class="introducao">As mudanças valem para qualquer celular ou computador em que você entrar.</p>
+{% endif %}
+
+{% include "componentes/resumo_erros.html" %}
+
+<form method="post" class="pilha" novalidate>
+  {% csrf_token %}
+  <input type="hidden" name="proximo" value="{{ proximo }}">
+
+  <section class="cartao" aria-labelledby="secao-texto">
+    <h2 id="secao-texto">Texto</h2>
+    {% include "componentes/grupo_opcoes.html" with campo=form.tamanho_texto grade=True %}
+    {% include "componentes/grupo_opcoes.html" with campo=form.fonte %}
+    {% include "componentes/verificacao.html" with campo=form.espacamento_ampliado %}
+  </section>
+
+  <section class="cartao" aria-labelledby="secao-cores">
+    <h2 id="secao-cores">Cores</h2>
+    <fieldset>
+      <legend>{{ form.tema.label|capfirst }}</legend>
+      <div class="opcoes">
+        {% for opcao in form.tema %}
+          <label class="opcao" for="{{ opcao.id_for_label }}">
+            {{ opcao.tag }}
+            <span class="amostra amostra--{{ opcao.data.value }}" aria-hidden="true">
+              {% if opcao.data.value == "claro" %}<span style="background:#FAF8FC"></span><span style="background:#5705CB"></span><span style="background:#404040"></span>
+              {% elif opcao.data.value == "escuro" %}<span style="background:#2B2B2B"></span><span style="background:#C49BFE"></span><span style="background:#E2E2E2"></span>
+              {% elif opcao.data.value == "ac-escuro" %}<span style="background:#000"></span><span style="background:#FFD60A"></span><span style="background:#FFF"></span>
+              {% elif opcao.data.value == "ac-claro" %}<span style="background:#FFF"></span><span style="background:#000"></span><span style="background:#3D0391"></span>
+              {% else %}<span style="background:#FAF8FC"></span><span style="background:#2B2B2B"></span><span style="background:#8A38FE"></span>{% endif %}
+            </span>
+            <span class="opcao__texto">{{ opcao.choice_label }}</span>
+          </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+  </section>
+
+  <section class="cartao" aria-labelledby="secao-tela">
+    <h2 id="secao-tela">Tela</h2>
+    {% include "componentes/verificacao.html" with campo=form.modo_simplificado %}
+    {% include "componentes/verificacao.html" with campo=form.reduzir_movimento %}
+  </section>
+
+  <section class="cartao" aria-labelledby="secao-avisos">
+    <h2 id="secao-avisos">Avisos</h2>
+    <p>
+      Avisos aparecem quando alguém chega, cancela ou quando seu próximo horário está perto.
+      Eles sempre são enviados ao seu leitor de tela (TalkBack, VoiceOver ou NVDA), se você usa um.
+    </p>
+    {% include "componentes/verificacao.html" with campo=form.fala_ativa %}
+    {% include "componentes/grupo_opcoes.html" with campo=form.fala_velocidade grade=True %}
+    <div class="acoes">
+      <button type="button" class="botao botao--secundario" id="testar-fala" hidden>Testar a voz</button>
+    </div>
+    {% include "componentes/verificacao.html" with campo=form.vibracao %}
+    {% include "componentes/verificacao.html" with campo=form.som %}
+  </section>
+
+  <section class="cartao" aria-labelledby="secao-libras">
+    <h2 id="secao-libras">Libras</h2>
+    {% include "componentes/verificacao.html" with campo=form.libras %}
+  </section>
+
+  <div class="acoes">
+    <button type="submit" class="botao botao--grande">Salvar preferências</button>
+    {% if primeiro_acesso %}
+      <button type="submit" name="pular" value="1" class="botao botao--secundario botao--grande">Pular por enquanto</button>
+    {% endif %}
+  </div>
+</form>
+
+{% include "notificacoes/_painel.html" with texto="Receba avisos no celular mesmo com a tela bloqueada: lembretes, chegadas e cancelamentos. Ative em cada aparelho que você usa." %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // "Testar a voz" usa a velocidade marcada no formulário, antes de salvar.
+  document.addEventListener("DOMContentLoaded", function () {
+    var botao = document.getElementById("testar-fala");
+    if (!window.Anunciador || !window.Anunciador.temFala) return;
+    botao.hidden = false;
+    botao.addEventListener("click", function () {
+      var marcada = document.querySelector("input[name=fala_velocidade]:checked");
+      var fala = new SpeechSynthesisUtterance("Ana chegou. Atendimento das 9h20.");
+      fala.lang = "pt-BR";
+      fala.rate = marcada ? parseInt(marcada.value, 10) / 100 : 1;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(fala);
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Agendar: escolha o dia{% endblock %}
+{% block conteudo %}
+<p class="texto-suave">Passo 1 de 3</p>
+<h1>Escolha o dia</h1>
+{% if not restantes %}
+  <p class="mensagem mensagem--aviso"><span class="mensagem__icone" aria-hidden="true">!</span>
+    <span>Você já usou as {{ politica.max_por_semana }} massagens desta semana. Escolha um dia a partir da próxima segunda-feira.</span></p>
+{% endif %}
+
+{% if dias %}
+  <ul class="lista-dias">
+    {% for item in dias %}
+      <li>
+        {% if item.ja_tem_agendamento %}
+          <p class="indisponivel">{{ item.dia|dia|capfirst }}: você já tem massagem neste dia.</p>
+        {% else %}
+          <a href="{% url 'agenda:agendar_horario' item.dia.isoformat %}">
+            <span>{{ item.dia|dia|capfirst }}</span>
+            <span class="detalhe">{% if item.livres %}{{ item.livres }} horário{{ item.livres|pluralize }} livre{{ item.livres|pluralize }}{% else %}Lotado. Entrar na lista de espera{% endif %}</span>
+          </a>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Não há horários livres nos próximos {{ politica.dias_para_agendar }} dias. Tente de novo mais tarde ou fale com a recepção.</p>
+{% endif %}
+{% endblock %}
