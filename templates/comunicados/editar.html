@@ -11,8 +11,11 @@
   {% csrf_token %}
   {% include "componentes/campo.html" with campo=form.titulo %}
   {% include "componentes/campo.html" with campo=form.texto %}
+  {% include "componentes/grupo_opcoes.html" with campo=form.nivel %}
   {% include "componentes/grupo_opcoes.html" with campo=form.publico %}
   {% include "componentes/campo.html" with campo=form.unidade %}
+  {% include "componentes/campo.html" with campo=form.data_inicio %}
+  {% include "componentes/campo.html" with campo=form.data_fim %}
   {% include "componentes/verificacao.html" with campo=form.ativo %}
   {% include "componentes/verificacao.html" with campo=form.avisar %}
   <div class="acoes"><button type="submit" class="botao botao--grande">Salvar</button></div>

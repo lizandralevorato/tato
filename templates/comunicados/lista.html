@@ -11,8 +11,8 @@
     {% for item in itens %}
       <li>
         <article class="cartao{% if item.novo %} cartao--destaque{% endif %}" aria-labelledby="c-{{ item.c.pk }}">
-          <h2 id="c-{{ item.c.pk }}">{% if item.novo %}<span class="status status--chegou">Novo</span> {% endif %}{{ item.c.titulo }}</h2>
-          <p class="texto-suave">{{ item.c.publicado_em|dia|capfirst }}{% if item.c.autor %}, por {{ item.c.autor.nome }}{% endif %}</p>
+          <h2 id="c-{{ item.c.pk }}">{% if item.novo %}<span class="status status--chegou">Novo</span> {% endif %}<span class="status status--{{ item.c.nivel }}">{{ item.c.get_nivel_display }}</span> {{ item.c.titulo }}</h2>
+          <p class="texto-suave">{{ item.c.publicado_em|dia|capfirst }}{% if item.c.autor %}, por {{ item.c.autor.nome }}{% endif %}{% if item.c.data_inicio or item.c.data_fim %}, exibido {% if item.c.data_inicio %}de {{ item.c.data_inicio|dia }} {% endif %}{% if item.c.data_fim %}até {{ item.c.data_fim|dia }}{% endif %}{% endif %}</p>
           <div class="texto-longo">{{ item.c.texto|linebreaks }}</div>
         </article>
       </li>

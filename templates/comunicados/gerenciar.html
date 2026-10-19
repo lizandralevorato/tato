@@ -11,14 +11,15 @@
     <table>
       <caption id="cap-comunicados">Comunicados</caption>
       <thead>
-        <tr><th scope="col">Título</th><th scope="col">Para quem</th><th scope="col">Publicado em</th><th scope="col">Situação</th><th scope="col">Ações</th></tr>
+        <tr><th scope="col">Título</th><th scope="col">Nível</th><th scope="col">Para quem</th><th scope="col">Período</th><th scope="col">Situação</th><th scope="col">Ações</th></tr>
       </thead>
       <tbody>
         {% for c in comunicados %}
           <tr>
             <th scope="row">{{ c.titulo }}</th>
+            <td>{{ c.get_nivel_display }}</td>
             <td>{{ c.get_publico_display }}{% if c.unidade %}, {{ c.unidade.nome }}{% endif %}</td>
-            <td>{{ c.publicado_em|dia|capfirst }}</td>
+            <td>{% if c.data_inicio or c.data_fim %}{% if c.data_inicio %}{{ c.data_inicio|dia }}{% else %}sempre{% endif %} até {% if c.data_fim %}{{ c.data_fim|dia }}{% else %}sempre{% endif %}{% else %}sempre{% endif %}</td>
             <td>{% if c.ativo %}Publicado{% else %}Escondido{% endif %}</td>
             <td>
               <div class="agenda__linha">

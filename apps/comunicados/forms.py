@@ -14,8 +14,14 @@ class ComunicadoForm(forms.ModelForm):
 
     class Meta:
         model = Comunicado
-        fields = ["titulo", "texto", "publico", "unidade", "ativo"]
-        widgets = {"publico": forms.RadioSelect, "texto": forms.Textarea(attrs={"rows": 6})}
+        fields = ["titulo", "texto", "nivel", "publico", "unidade", "data_inicio", "data_fim", "ativo"]
+        widgets = {
+            "publico": forms.RadioSelect,
+            "nivel": forms.RadioSelect,
+            "texto": forms.Textarea(attrs={"rows": 6}),
+            "data_inicio": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "data_fim": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -23,3 +29,10 @@ class ComunicadoForm(forms.ModelForm):
         self.fields["unidade"].empty_label = "Todas as unidades"
         self.fields["unidade"].help_text = ""
         self.fields["ativo"].help_text = "Desmarque para esconder o comunicado sem apagar."
+
+    def clean(self):
+        dados = super().clean()
+        inicio, fim = dados.get("data_inicio"), dados.get("data_fim")
+        if inicio and fim and fim < inicio:
+            self.add_error("data_fim", "A data final não pode ser antes da data inicial.")
+        return dados

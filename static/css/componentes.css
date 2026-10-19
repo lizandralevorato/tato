@@ -48,8 +48,12 @@
 .status--chegou     { color: var(--selecionado-texto); background: var(--selecionado-fundo); }
 .status--expirado   { color: var(--aviso-texto);   background: var(--aviso-fundo); }
 .status--realizado  { color: var(--sucesso-texto); background: var(--sucesso-fundo); }
-.status--falta      { color: var(--erro-texto);    background: var(--erro-fundo); }
-.status--cancelado  { color: var(--texto-suave);   background: var(--superficie-alt); }
+.status--falta       { color: var(--erro-texto);    background: var(--erro-fundo); }
+.status--cancelado   { color: var(--texto-suave);   background: var(--superficie-alt); }
+.status--informativo { color: var(--info-texto);    background: var(--info-fundo); }
+.status--importante  { color: var(--aviso-texto);   background: var(--aviso-fundo); }
+.status--urgente     { color: var(--erro-texto);    background: var(--erro-fundo); }
+.status--evento      { color: var(--selecionado-texto); background: var(--selecionado-fundo); }
 
 /* Mensagens */
 .mensagens { display: grid; gap: var(--espaco-3); }
