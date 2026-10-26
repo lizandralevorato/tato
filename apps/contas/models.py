@@ -108,6 +108,14 @@ class PerfilAcessibilidade(models.Model):
         (200, "Muito grande"),
         (250, "Máximo"),
     ]
+    LEMBRETES_CHECKIN = [
+        (15, "15 minutos antes"),
+        (30, "30 minutos antes"),
+        (45, "45 minutos antes"),
+        (60, "1 hora antes"),
+        (120, "2 horas antes"),
+        (180, "3 horas antes"),
+    ]
     VELOCIDADES = [
         (75, "Devagar"),
         (100, "Normal"),
@@ -133,6 +141,9 @@ class PerfilAcessibilidade(models.Model):
     fala_ativa = models.BooleanField("avisos falados pelo site", default=False)
     fala_velocidade = models.PositiveSmallIntegerField(
         "velocidade da fala", choices=VELOCIDADES, default=100
+    )
+    lembrete_checkin_min = models.PositiveSmallIntegerField(
+        "lembrar do check-in quanto tempo antes do prazo", choices=LEMBRETES_CHECKIN, default=60
     )
     vibracao = models.BooleanField("vibrar o celular nos avisos", default=True)
     som = models.BooleanField("tocar um som curto nos avisos", default=True)

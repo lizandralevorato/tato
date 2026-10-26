@@ -10,6 +10,7 @@ from django.utils import timezone
 
 from apps.agenda import servicos
 from apps.agenda.models import Agendamento, PoliticaBeneficio
+from apps.contas.models import PerfilAcessibilidade
 
 from . import avisos, push
 from .models import Notificacao
@@ -18,26 +19,29 @@ Status = Agendamento.Status
 
 
 def enviar_lembretes(agora=None):
-    """Lembrete de check-in: sai quando o check-in abre, para quem ainda não fez."""
+    """Lembrete de check-in: sai no tempo escolhido por cada pessoa antes do prazo."""
     agora = agora or timezone.now()
+    maior = max(minutos for minutos, _ in PerfilAcessibilidade.LEMBRETES_CHECKIN)
     enviados = 0
     for politica in PoliticaBeneficio.objects.all():
         if not servicos.checkin_obrigatorio(politica):
             continue
-        abre_min = max(politica.checkin_abre_min, politica.checkin_prazo_min)
         pendentes = (
             Agendamento.objects.filter(
                 massoterapeuta__unidade_id=politica.unidade_id,
                 status=Status.AGENDADO,
                 inicio__gt=agora + timedelta(minutes=politica.checkin_prazo_min),
-                inicio__lte=agora + timedelta(minutes=abre_min),
+                inicio__lte=agora + timedelta(minutes=politica.checkin_prazo_min + maior),
             )
             .exclude(notificacoes__tipo=Notificacao.Tipo.LEMBRETE)
             .select_related("colaborador", "massoterapeuta__usuario", "massoterapeuta__unidade")
         )
         for agendamento in pendentes:
-            _, prazo, limite = servicos.janela_checkin(agendamento)
-            if avisos.lembrete(agendamento, prazo, limite):
+            abre, prazo, limite = servicos.janela_checkin(agendamento)
+            perfil, _ = PerfilAcessibilidade.objects.get_or_create(usuario=agendamento.colaborador)
+            if agora < prazo - timedelta(minutes=perfil.lembrete_checkin_min):
+                continue
+            if avisos.lembrete(agendamento, prazo, limite, abre=abre if agora < abre else None):
                 enviados += 1
     return enviados
 

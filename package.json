@@ -4,6 +4,10 @@
   "description": "Ferramentas de Node só para checagens (Lighthouse CI). O site é Django.",
   "type": "commonjs",
   "scripts": {
+    "start": ".venv\\Scripts\\python.exe manage.py runserver 8010",
+    "migrate": ".venv\\Scripts\\python.exe manage.py migrate",
+    "test": ".venv\\Scripts\\python.exe -m pytest",
+    "notificacoes": ".venv\\Scripts\\python.exe manage.py notificacoes --continuo",
     "lighthouse": "lhci autorun"
   },
   "devDependencies": {

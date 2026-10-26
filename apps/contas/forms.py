@@ -32,6 +32,7 @@ class PreferenciasForm(forms.ModelForm):
             "modo_simplificado",
             "fala_ativa",
             "fala_velocidade",
+            "lembrete_checkin_min",
             "vibracao",
             "som",
             "libras",
@@ -41,8 +42,13 @@ class PreferenciasForm(forms.ModelForm):
             "fonte": forms.RadioSelect,
             "tema": forms.RadioSelect,
             "fala_velocidade": forms.RadioSelect,
+            "lembrete_checkin_min": forms.RadioSelect,
         }
         help_texts = {
+            "lembrete_checkin_min": (
+                "Você recebe um lembrete da massagem neste tempo antes do prazo do check-in. "
+                "Se não fizer o check-in, ainda recebe um último aviso no prazo, antes de a reserva ser liberada."
+            ),
             "fala_ativa": (
                 "O site fala sozinho quando alguém chega, cancela ou quando o próximo "
                 "atendimento está perto. Se você já usa TalkBack ou VoiceOver, teste "

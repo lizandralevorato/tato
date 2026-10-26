@@ -124,7 +124,7 @@ def test_preferencia_de_libras(client, colaborador):
     entrar(client, colaborador)
     client.post(
         reverse("contas:preferencias"),
-        {"tamanho_texto": 100, "fonte": "padrao", "tema": "sistema", "fala_velocidade": 100, "libras": "on"},
+        {"tamanho_texto": 100, "fonte": "padrao", "tema": "sistema", "fala_velocidade": 100, "lembrete_checkin_min": 60, "libras": "on"},
     )
     html = client.get(reverse("acessibilidade")).content.decode()
     assert 'data-libras="1"' in html and "data-abrir-libras" in html

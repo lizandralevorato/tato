@@ -156,13 +156,21 @@ def _url_lembrete(agendamento):
     return reverse("notificacoes:lembrete", args=[tokens.gerar(agendamento)])
 
 
-def lembrete(agendamento, prazo, limite):
-    """Check-in aberto: pede para confirmar, com botões Fazer check-in / Não vou."""
+def lembrete(agendamento, prazo, limite, abre=None):
+    """Lembrete da massagem, com botões Fazer check-in / Não vou.
+
+    `abre` só é informado quando o check-in ainda não abriu.
+    """
+    quando_checkin = (
+        f"O check-in abre às {hora(abre)} e vai até {hora(prazo)}."
+        if abre
+        else f"Faça o check-in até {hora(prazo)}."
+    )
     return notificar(
         agendamento.colaborador,
         Tipo.LEMBRETE,
-        "Faça o check-in da massagem",
-        f"{_quando_massagem(agendamento)}. Faça o check-in até {hora(prazo)}. "
+        "Lembrete da sua massagem" if abre else "Faça o check-in da massagem",
+        f"{_quando_massagem(agendamento)}. {quando_checkin} "
         f"Sem check-in até {hora(limite)}, a reserva é liberada para outra pessoa.",
         url=_url_lembrete(agendamento),
         agendamento=agendamento,

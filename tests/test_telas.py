@@ -205,7 +205,7 @@ def test_salvar_preferencias(client, colaborador):
     entrar(client, colaborador)
     resposta = client.post(
         reverse("contas:preferencias"),
-        {"tamanho_texto": 150, "fonte": "legivel", "tema": "ac-escuro", "fala_velocidade": 100, "fala_ativa": "on"},
+        {"tamanho_texto": 150, "fonte": "legivel", "tema": "ac-escuro", "fala_velocidade": 100, "lembrete_checkin_min": 30, "fala_ativa": "on"},
         follow=True,
     )
     assert "Preferências salvas" in resposta.content.decode()

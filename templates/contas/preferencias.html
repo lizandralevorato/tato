@@ -64,6 +64,7 @@
     <div class="acoes">
       <button type="button" class="botao botao--secundario" id="testar-fala" hidden>Testar a voz</button>
     </div>
+    {% include "componentes/grupo_opcoes.html" with campo=form.lembrete_checkin_min grade=True %}
     {% include "componentes/verificacao.html" with campo=form.vibracao %}
     {% include "componentes/verificacao.html" with campo=form.som %}
   </section>

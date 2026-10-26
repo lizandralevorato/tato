@@ -189,6 +189,27 @@ def test_lembrete_sai_quando_o_checkin_abre_e_uma_vez_so(
     assert tokens.ler(dados["url"].split("/")[2]) == ag.pk
 
 
+def test_lembrete_respeita_o_tempo_escolhido_nas_preferencias(massoterapeuta, colaborador, segunda, em, cedo):
+    colaborador.perfil_acessibilidade.lembrete_checkin_min = 30
+    colaborador.perfil_acessibilidade.save()
+    servicos.agendar(colaborador, massoterapeuta, em(segunda, 10), agora=cedo)
+    assert tarefas.enviar_lembretes(agora=em(segunda, 8, 29)) == 0  # prazo 9h, 30 min antes = 8h30
+    assert tarefas.enviar_lembretes(agora=em(segunda, 8, 31)) == 1
+
+
+def test_lembrete_antes_do_checkin_abrir_avisa_o_horario_de_abertura(
+    massoterapeuta, colaborador, segunda, em, cedo, enviados, django_capture_on_commit_callbacks
+):
+    inscrever(colaborador)
+    colaborador.perfil_acessibilidade.lembrete_checkin_min = 180
+    colaborador.perfil_acessibilidade.save()
+    servicos.agendar(colaborador, massoterapeuta, em(segunda, 10), agora=cedo)
+    with django_capture_on_commit_callbacks(execute=True):
+        assert tarefas.enviar_lembretes(agora=em(segunda, 5, 59)) == 0
+        assert tarefas.enviar_lembretes(agora=em(segunda, 6, 1)) == 1
+    assert "O check-in abre às 8h e vai até 9h." in enviados[0]["dados"]["corpo"]
+
+
 def test_lembrete_nao_vai_para_quem_ja_fez_checkin(massoterapeuta, colaborador, segunda, em, cedo):
     ag = servicos.agendar(colaborador, massoterapeuta, em(segunda, 10), agora=cedo)
     servicos.fazer_checkin(ag, agora=em(segunda, 8))

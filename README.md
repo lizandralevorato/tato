@@ -20,6 +20,7 @@ python -m venv .venv
 
 Abra http://localhost:8010.
 
+Atalhos via npm: `npm run start` (servidor), `npm run migrate`, `npm test` e `npm run notificacoes` (processador de avisos).
 Para as notificações, gere as chaves uma vez e rode o processador em outro terminal:
 
 ```bash
@@ -143,7 +144,7 @@ O admin do Django (`/admin/`) fica só para o superusuário: cadastro de unidade
 - **Service worker** em `/sw.js` ([templates/notificacoes/sw.js](templates/notificacoes/sw.js)): mostra a notificação com texto completo, vibração conforme a preferência da pessoa e os botões **Vou / Não vou** no lembrete. Se o site estiver aberto na tela, não duplica: repassa o aviso para a página, que anuncia pelo leitor de tela e atualiza a agenda na hora.
 - **Quem recebe o quê**:
   - Massoterapeuta: novo agendamento do dia, chegada ("Ana chegou"), cancelamento do dia, "próximo em 5 minutos".
-  - Colaborador: lembrete de check-in quando o check-in abre (2 h antes), último aviso no prazo (1 h antes), aviso de reserva liberada e aviso quando a recepção cancela. Os lembretes têm os botões **Fazer check-in / Não vou**.
+  - Colaborador: lembrete de check-in no tempo escolhido em Preferências (15, 30, 45 min, 1, 2 ou 3 h antes do prazo; padrão 1 h, igual ao comportamento anterior), último aviso no prazo (1 h antes da massagem), aviso de reserva liberada e aviso quando a recepção cancela. Se o lembrete sair antes de o check-in abrir, ele informa o horário de abertura. Os lembretes têm os botões **Fazer check-in / Não vou**.
   - Massoterapeuta e todos: comunicados, se quem publicou marcar "avisar no celular".
   - Lista de espera: aviso "Abriu uma vaga" quando alguém cancela ou uma reserva é liberada.
   - Tempos configuráveis por unidade na tela Regras (0 desliga).
