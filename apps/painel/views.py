@@ -7,12 +7,12 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.utils.http import urlencode
 
-from apps.agenda.formatacao import hora
 from apps.agenda.models import HistoricoAgendamento, Unidade
 from apps.agenda.views import acesso
 from apps.agenda.views.recepcao import unidade_da_equipe
 
-from . import indicadores
+from . import exportacao, indicadores
+from . import relatorio_colaboradores as relatorio
 
 MAX_DIAS = 366
 
@@ -71,6 +71,16 @@ def inicio(request):
     )
 
 
+def _reservas(filtros):
+    if not filtros["unidade"]:
+        return []
+    return relatorio.reservas(filtros["unidade"], filtros["de"], filtros["ate"], filtros["massoterapeuta"])
+
+
+def _resumo(filtros):
+    return indicadores.resumo(filtros["unidade"], filtros["de"], filtros["ate"], filtros["massoterapeuta"])
+
+
 def _csv(nome):
     resposta = HttpResponse(content_type="text/csv; charset=utf-8")
     resposta["Content-Disposition"] = f'attachment; filename="{nome}"'
@@ -82,27 +92,9 @@ def _csv(nome):
 def csv_agendamentos(request):
     filtros = _filtros(request)
     resposta, escritor = _csv(f"agendamentos_{filtros['de']}_{filtros['ate']}.csv")
-    escritor.writerow(
-        ["Data", "Hora", "Massoterapeuta", "Colaborador", "E-mail", "Situação", "Origem", "Agendado em", "Cancelado por"]
-    )
-    if filtros["unidade"]:
-        qs = indicadores.agendamentos(
-            filtros["unidade"], filtros["de"], filtros["ate"], filtros["massoterapeuta"]
-        ).select_related("colaborador", "massoterapeuta__usuario", "cancelado_por")
-        for ag in qs.order_by("inicio"):
-            escritor.writerow(
-                [
-                    timezone.localtime(ag.inicio).strftime("%d/%m/%Y"),
-                    hora(ag.inicio),
-                    ag.massoterapeuta.nome,
-                    ag.colaborador.nome,
-                    ag.colaborador.email,
-                    ag.get_status_display(),
-                    ag.get_origem_display(),
-                    timezone.localtime(ag.criado_em).strftime("%d/%m/%Y %H:%M"),
-                    ag.cancelado_por.nome if ag.cancelado_por else "",
-                ]
-            )
+    escritor.writerow(exportacao.CABECALHO_AGENDAMENTOS)
+    for linha in exportacao.linhas_agendamentos(_reservas(filtros)):
+        escritor.writerow([exportacao.texto(valor) for valor in linha])
     return resposta
 
 
@@ -110,23 +102,33 @@ def csv_agendamentos(request):
 def csv_resumo(request):
     filtros = _filtros(request)
     resposta, escritor = _csv(f"resumo_{filtros['de']}_{filtros['ate']}.csv")
-    escritor.writerow(
-        [
-            "Massoterapeuta", "Horários oferecidos", "Reservados", "Ocupação (%)", "Atendidos", "Faltas",
-            "Faltas (%)", "Cancelados", "Liberados sem check-in", "Pela recepção ou encaixe",
-        ]
-    )
+    escritor.writerow(exportacao.CABECALHO_RESUMO)
     if filtros["unidade"]:
-        dados = indicadores.resumo(filtros["unidade"], filtros["de"], filtros["ate"], filtros["massoterapeuta"])
-        for linha in [*dados["por_massoterapeuta"], dados["geral"]]:
-            escritor.writerow(
-                [
-                    linha.rotulo, linha.oferecidos, linha.reservados, linha.ocupacao if linha.ocupacao is not None else "",
-                    linha.realizados, linha.faltas, linha.taxa_faltas if linha.taxa_faltas is not None else "",
-                    linha.cancelados, linha.liberados, linha.encaixes,
-                ]
-            )
+        escritor.writerows(exportacao.linhas_resumo(_resumo(filtros)))
     return resposta
+
+
+def _xlsx(conteudo, nome):
+    resposta = HttpResponse(
+        conteudo, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    resposta["Content-Disposition"] = f'attachment; filename="{nome}"'
+    return resposta
+
+
+@acesso.equipe
+def xlsx_agendamentos(request):
+    filtros = _filtros(request)
+    return _xlsx(
+        exportacao.xlsx_agendamentos(_reservas(filtros)), f"agendamentos_{filtros['de']}_{filtros['ate']}.xlsx"
+    )
+
+
+@acesso.equipe
+def xlsx_resumo(request):
+    filtros = _filtros(request)
+    conteudo = exportacao.xlsx_resumo(_resumo(filtros) if filtros["unidade"] else None)
+    return _xlsx(conteudo, f"resumo_{filtros['de']}_{filtros['ate']}.xlsx")
 
 
 @acesso.equipe

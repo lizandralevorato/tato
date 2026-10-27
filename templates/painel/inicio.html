@@ -81,10 +81,10 @@
 
 <section aria-labelledby="titulo-exportar" class="cartao">
   <h2 id="titulo-exportar">Baixar planilhas</h2>
-  <p>Arquivos CSV, que abrem no Excel, no Google Planilhas ou no LibreOffice.</p>
+  <p>Em Excel ou em CSV (abre no Excel, no Google Planilhas ou no LibreOffice). O Excel de agendamentos traz também os totais por colaborador e por mês.</p>
   <ul>
-    <li><a href="{% url 'painel:csv_resumo' %}?{{ consulta }}">Resumo por massoterapeuta (CSV)</a></li>
-    <li><a href="{% url 'painel:csv_agendamentos' %}?{{ consulta }}">Todos os agendamentos do período (CSV)</a></li>
+    <li>Resumo por massoterapeuta: <a href="{% url 'painel:xlsx_resumo' %}?{{ consulta }}">Excel</a> ou <a href="{% url 'painel:csv_resumo' %}?{{ consulta }}">CSV</a></li>
+    <li>Todos os agendamentos do período: <a href="{% url 'painel:xlsx_agendamentos' %}?{{ consulta }}">Excel</a> ou <a href="{% url 'painel:csv_agendamentos' %}?{{ consulta }}">CSV</a></li>
   </ul>
   <p><a href="{% url 'painel:historico' %}?{{ consulta }}">Ver o histórico de alterações do período</a></p>
 </section>

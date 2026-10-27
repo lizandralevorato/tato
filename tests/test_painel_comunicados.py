@@ -1,7 +1,9 @@
 from datetime import timedelta
+from io import BytesIO
 
 import pytest
 from django.urls import reverse
+from openpyxl import load_workbook
 
 from apps.agenda import servicos
 from apps.comunicados.models import Comunicado
@@ -61,6 +63,37 @@ def test_tela_do_painel_e_csv(client, recepcao, semana_movimentada, segunda):
 
     resumo = client.get(reverse("painel:csv_resumo"), filtros).content.decode("utf-8-sig")
     assert "Carlos;84;2;" in resumo
+
+
+def test_excel_de_agendamentos_e_resumo(client, recepcao, semana_movimentada, segunda):
+    entrar(client, recepcao)
+    filtros = {"de": segunda.isoformat(), "ate": (segunda + timedelta(days=6)).isoformat()}
+
+    resposta = client.get(reverse("painel:xlsx_agendamentos"), filtros)
+    assert resposta["Content-Type"].endswith("spreadsheetml.sheet")
+    planilha = load_workbook(BytesIO(resposta.content))
+    assert planilha.sheetnames == ["Reservas", "Por colaborador", "Por mês"]
+    assert planilha["Reservas"].max_row == 4  # cabeçalho + 3 agendamentos
+    assert planilha["Por colaborador"].max_row == 3  # Ana e Bruno
+
+    resumo = load_workbook(BytesIO(client.get(reverse("painel:xlsx_resumo"), filtros).content))
+    assert resumo["Por massoterapeuta"]["A2"].value == "Carlos"
+
+
+def test_excel_nao_executa_formula_do_cadastro(client, recepcao, colaborador, semana_movimentada, segunda):
+    colaborador.first_name = "=1+1"
+    colaborador.save()
+    entrar(client, recepcao)
+    filtros = {"de": segunda.isoformat(), "ate": (segunda + timedelta(days=6)).isoformat()}
+    planilha = load_workbook(BytesIO(client.get(reverse("painel:xlsx_agendamentos"), filtros).content))
+    celulas = [c for linha in planilha["Reservas"].iter_rows(min_row=2) for c in linha if c.value == "=1+1"]
+    assert celulas and all(c.data_type == "s" for c in celulas)
+
+
+def test_excel_so_para_a_equipe(client, colaborador):
+    entrar(client, colaborador)
+    assert client.get(reverse("painel:xlsx_agendamentos")).status_code == 403
+    assert client.get(reverse("painel:xlsx_resumo")).status_code == 403
 
 
 def test_tela_de_historico(client, recepcao, semana_movimentada, segunda):
