@@ -60,7 +60,7 @@ def linhas_agendamentos(agendamentos):
 
 CABECALHO_RESUMO = [
     "Massoterapeuta", "Horários oferecidos", "Reservados", "Ocupação (%)", "Atendidos", "Faltas",
-    "Faltas (%)", "Cancelados", "Liberados sem check-in", "Pela recepção ou encaixe",
+    "Faltas (%)", "Cancelados", "Liberados sem check-in", "Pelo administrador ou encaixe",
 ]
 
 

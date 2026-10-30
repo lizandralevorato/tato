@@ -284,13 +284,13 @@ def escolher_massoterapeuta(unidade, inicio: datetime, agora=None):
 
 
 def agendar(colaborador, massoterapeuta, inicio: datetime, agora=None, por=None, encaixe=False, excecao=False):
-    """Cria o agendamento. `por` é quem agendou, quando não foi a própria pessoa (recepção)."""
+    """Cria o agendamento. `por` é quem agendou, quando não foi a própria pessoa (administrador)."""
     agora = agora or timezone.now()
     pela_equipe = por is not None and por.pk != colaborador.pk
     if encaixe:
         origem, acao = Agendamento.Origem.ENCAIXE, Acao.ENCAIXE
     elif pela_equipe:
-        origem, acao = Agendamento.Origem.RECEPCAO, Acao.AGENDADO_EQUIPE
+        origem, acao = Agendamento.Origem.ADMINISTRADOR, Acao.AGENDADO_EQUIPE
     else:
         origem, acao = Agendamento.Origem.AUTOAGENDAMENTO, Acao.AGENDADO
     with transaction.atomic():
@@ -342,7 +342,7 @@ def cancelar(agendamento, por, agora=None):
     if not por.eh_equipe and agora > limite:
         raise RegraViolada(
             f"O cancelamento só pode ser feito até {politica.antecedencia_cancelamento_min} minutos "
-            f"antes (até {formatar_hora(limite)}). Fale com a recepção."
+            f"antes (até {formatar_hora(limite)}). Fale com o administrador."
         )
     with transaction.atomic():
         agendamento.status = Status.CANCELADO
@@ -408,7 +408,7 @@ def fazer_checkin(agendamento, agora=None, por=None):
     if agora < abre:
         raise RegraViolada(f"O check-in abre {_quando(abre, agora)}.")
     if agora > limite:
-        raise RegraViolada(f"O prazo do check-in terminou às {formatar_hora(limite)}. Fale com a recepção.")
+        raise RegraViolada(f"O prazo do check-in terminou às {formatar_hora(limite)}. Fale com o administrador.")
     # Atualização condicional: se a liberação automática ganhou a corrida, não sobrescreve.
     if not Agendamento.objects.filter(pk=agendamento.pk, status=Status.AGENDADO).update(
         status=Status.CONFIRMADO, confirmado_em=agora, atualizado_em=agora
@@ -474,7 +474,7 @@ def avisar_chegada(agendamento, agora=None):
     if agora < abre:
         raise RegraViolada(f"O aviso de chegada abre às {formatar_hora(abre)}.")
     if agora > fecha:
-        raise RegraViolada("A tolerância de atraso já passou. Fale com a recepção.")
+        raise RegraViolada("A tolerância de atraso já passou. Fale com o administrador.")
     agendamento.status = Status.CHEGOU
     agendamento.chegada_em = agora
     agendamento.save(update_fields=["status", "chegada_em", "atualizado_em"])

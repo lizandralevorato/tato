@@ -37,7 +37,7 @@
             <th scope="row">{{ h.em|date:"d/m" }}, {{ h.em|hora }}</th>
             <td>{{ h.get_acao_display }}{% if h.detalhe %}. {{ h.detalhe }}{% endif %}</td>
             <td>{{ h.quem }}</td>
-            <td><a href="{% url 'agenda:recepcao_agendamento' h.agendamento_id %}">{{ h.agendamento.inicio|date:"d/m" }}, {{ h.agendamento.inicio|hora }}, {{ h.agendamento.colaborador.nome }} com {{ h.agendamento.massoterapeuta.nome }}</a></td>
+            <td><a href="{% url 'agenda:administrador_agendamento' h.agendamento_id %}">{{ h.agendamento.inicio|date:"d/m" }}, {{ h.agendamento.inicio|hora }}, {{ h.agendamento.colaborador.nome }} com {{ h.agendamento.massoterapeuta.nome }}</a></td>
           </tr>
         {% endfor %}
       </tbody>

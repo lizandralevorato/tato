@@ -38,11 +38,11 @@ class Command(BaseCommand):
         unidade, _ = Unidade.objects.get_or_create(nome="Londrina")
         PoliticaBeneficio.objects.get_or_create(unidade=unidade)
 
-        recepcao = self._usuario("recepcao", "Recepção", "Demo", Usuario.Papel.RECEPCAO, unidade)
-        recepcao.is_staff = True
-        recepcao.is_superuser = True
-        recepcao.save()
-        self._usuario("gestao", "Gestão", "Demo", Usuario.Papel.GESTAO, unidade)
+        administrador = self._usuario("administrador", "Administrador", "Demo", Usuario.Papel.ADMINISTRADOR, unidade)
+        administrador.is_staff = True
+        administrador.is_superuser = True
+        administrador.save()
+        self._usuario("sesmt", "SESMT", "Demo", Usuario.Papel.SESMT, unidade)
 
         massoterapeutas = []
         for apelido, nome, sobrenome, periodos, prefs in MASSOTERAPEUTAS:
@@ -66,11 +66,11 @@ class Command(BaseCommand):
             defaults={
                 "texto": "A partir de agora, os agendamentos de massagem são feitos por este site. "
                 "Vocês recebem aviso no celular quando alguém agenda, chega ou cancela.",
-                "autor": recepcao,
+                "autor": administrador,
             },
         )
         self.stdout.write(self.style.SUCCESS(f"Dados de demonstração prontos ({criados} agendamentos novos)."))
-        self.stdout.write(f"Contas: <apelido>@{DOMINIO}. Apelidos: recepcao, gestao, "
+        self.stdout.write(f"Contas: <apelido>@{DOMINIO}. Apelidos: administrador, sesmt, "
                           + ", ".join(a for a, *_ in MASSOTERAPEUTAS) + ", "
                           + ", ".join(a for a, *_ in COLABORADORES))
         self.stdout.write("Senha: veja SENHA_DEMO em apps/agenda/management/commands/popular_demo.py")

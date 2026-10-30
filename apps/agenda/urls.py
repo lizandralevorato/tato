@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import colaborador, massoterapeuta, recepcao
+from .views import colaborador, massoterapeuta, administrador
 
 app_name = "agenda"
 
@@ -27,15 +27,15 @@ urlpatterns = [
     path("massoterapeuta/ausencias/<int:pk>/remover/", massoterapeuta.remover_ausencia, name="remover_ausencia"),
     path("massoterapeuta/agendamentos/<int:pk>/atendido/", massoterapeuta.marcar_atendido, name="atendido"),
     path("massoterapeuta/agendamentos/<int:pk>/faltou/", massoterapeuta.marcar_falta, name="faltou"),
-    # Recepção e gestão
-    path("recepcao/", recepcao.agenda_da_unidade, name="recepcao"),
-    path("recepcao/agendar/", recepcao.agendar_para, name="recepcao_agendar"),
-    path("recepcao/agendamentos/<int:pk>/", recepcao.agendamento_detalhe, name="recepcao_agendamento"),
+    # Administrador e gestão
+    path("administrador/", administrador.agenda_da_unidade, name="administrador"),
+    path("administrador/agendar/", administrador.agendar_para, name="administrador_agendar"),
+    path("administrador/agendamentos/<int:pk>/", administrador.agendamento_detalhe, name="administrador_agendamento"),
     path(
-        "recepcao/agendamentos/<int:pk>/<str:acao>/", recepcao.marcar_pela_equipe, name="recepcao_marcar"
+        "administrador/agendamentos/<int:pk>/<str:acao>/", administrador.marcar_pela_equipe, name="administrador_marcar"
     ),
-    path("recepcao/pessoas/", recepcao.pessoas, name="pessoas"),
-    path("recepcao/pessoas/nova/", recepcao.pessoa, name="pessoa_nova"),
-    path("recepcao/pessoas/<int:pk>/", recepcao.pessoa, name="pessoa"),
-    path("recepcao/regras/", recepcao.regras, name="regras"),
+    path("administrador/pessoas/", administrador.pessoas, name="pessoas"),
+    path("administrador/pessoas/nova/", administrador.pessoa, name="pessoa_nova"),
+    path("administrador/pessoas/<int:pk>/", administrador.pessoa, name="pessoa"),
+    path("administrador/regras/", administrador.regras, name="regras"),
 ]

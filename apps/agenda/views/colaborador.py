@@ -22,7 +22,7 @@ def _unidade_do(usuario):
 
 
 def _sem_unidade(request):
-    messages.error(request, "Seu cadastro ainda não tem uma unidade. Fale com a recepção.")
+    messages.error(request, "Seu cadastro ainda não tem uma unidade. Fale com o administrador.")
     return render(request, "agenda/colaborador/sem_unidade.html")
 
 
@@ -225,7 +225,7 @@ def _agendamento_do_usuario(request, pk):
 
 
 def _destino_apos_acao(request):
-    return "agenda:recepcao" if request.user.eh_equipe and request.GET.get("de") == "recepcao" else "agenda:meus_agendamentos"
+    return "agenda:administrador" if request.user.eh_equipe and request.GET.get("de") == "administrador" else "agenda:meus_agendamentos"
 
 
 @acesso.colaborador

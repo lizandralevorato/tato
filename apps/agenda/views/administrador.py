@@ -54,7 +54,7 @@ def agenda_da_unidade(request):
     ]
     return render(
         request,
-        "agenda/recepcao/agenda.html",
+        "agenda/administrador/agenda.html",
         {
             "dia": dia,
             "anterior": dia - timedelta(days=1),
@@ -67,7 +67,7 @@ def agenda_da_unidade(request):
 
 def _url_agendar(**params):
     params = {chave: valor for chave, valor in params.items() if valor not in (None, "")}
-    return reverse("agenda:recepcao_agendar") + ("?" + urlencode(params) if params else "")
+    return reverse("agenda:administrador_agendar") + ("?" + urlencode(params) if params else "")
 
 
 @acesso.equipe
@@ -96,7 +96,7 @@ def agendar_para(request):
             request,
             f"Agendado para {colaborador.nome}: {servicos.descrever(agendamento)}. A pessoa recebe um aviso no celular.",
         )
-        return redirect(reverse("agenda:recepcao") + f"?dia={timezone.localtime(agendamento.inicio).date().isoformat()}")
+        return redirect(reverse("agenda:administrador") + f"?dia={timezone.localtime(agendamento.inicio).date().isoformat()}")
 
     busca = dados.get("q", "").strip()
     resultados = []
@@ -120,7 +120,7 @@ def agendar_para(request):
 
     return render(
         request,
-        "agenda/recepcao/agendar.html",
+        "agenda/administrador/agendar.html",
         {
             "busca": busca,
             "resultados": resultados,
@@ -175,7 +175,7 @@ def agendamento_detalhe(request, pk):
     agora = timezone.now()
     return render(
         request,
-        "agenda/recepcao/agendamento.html",
+        "agenda/administrador/agendamento.html",
         {
             "ag": agendamento,
             "descricao": servicos.descrever(agendamento, com_colaborador=True),
@@ -203,7 +203,7 @@ def marcar_pela_equipe(request, pk, acao):
         request,
         funcao,
         f"{formatar_hora(agendamento.inicio)}, {agendamento.colaborador.nome}: {texto}.",
-        reverse("agenda:recepcao_agendamento", args=[agendamento.pk]),
+        reverse("agenda:administrador_agendamento", args=[agendamento.pk]),
         agendamento,
         por=request.user,
     )
@@ -226,7 +226,7 @@ def pessoas(request):
         qs = qs.filter(papel=papel)
     return render(
         request,
-        "agenda/recepcao/pessoas.html",
+        "agenda/administrador/pessoas.html",
         {
             "pessoas": qs[:200],
             "total": qs.count(),
@@ -279,7 +279,7 @@ def pessoa(request, pk=None):
         else:
             messages.success(request, f"Cadastro de {usuario.nome} atualizado.")
         return redirect("agenda:pessoas")
-    return render(request, "agenda/recepcao/pessoa.html", {"form": form, "pessoa": usuario})
+    return render(request, "agenda/administrador/pessoa.html", {"form": form, "pessoa": usuario})
 
 
 @acesso.equipe
@@ -293,4 +293,4 @@ def regras(request):
         form.save()
         messages.success(request, "Regras do benefício salvas. Elas já valem para os próximos agendamentos.")
         return redirect("agenda:regras")
-    return render(request, "agenda/recepcao/regras.html", {"form": form, "unidade": unidade})
+    return render(request, "agenda/administrador/regras.html", {"form": form, "unidade": unidade})

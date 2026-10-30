@@ -56,7 +56,7 @@ def _quando_massagem(agendamento):
 
 
 def ao_agendar(agendamento, por=None):
-    """Avisa o massoterapeuta se for hoje e a pessoa se quem agendou foi a recepção."""
+    """Avisa o massoterapeuta se for hoje e a pessoa se quem agendou foi o administrador."""
     avisos = []
     if _eh_hoje(agendamento):
         avisos.append(
@@ -76,7 +76,7 @@ def ao_agendar(agendamento, por=None):
                 agendamento.colaborador,
                 Tipo.NOVO_AGENDAMENTO,
                 "Massagem agendada para você",
-                f"A recepção agendou sua massagem: {_quando_massagem(agendamento)}.",
+                f"O administrador agendou sua massagem: {_quando_massagem(agendamento)}.",
                 url=reverse("agenda:meus_agendamentos"),
                 agendamento=agendamento,
                 validade_seg=_segundos_ate(agendamento.inicio),
@@ -122,7 +122,7 @@ def ao_cancelar(agendamento, por):
             )
         else:
             corpo = (
-                f"A recepção cancelou sua massagem de {dia(agendamento.inicio)}, às {hora(agendamento.inicio)}. "
+                f"O administrador cancelou sua massagem de {dia(agendamento.inicio)}, às {hora(agendamento.inicio)}. "
                 "Se quiser, agende outro horário."
             )
         avisos.append(

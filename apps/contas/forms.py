@@ -7,7 +7,7 @@ from .models import PerfilAcessibilidade
 class EntrarForm(AuthenticationForm):
     error_messages = {
         "invalid_login": "E-mail ou senha incorretos. Confira e tente de novo.",
-        "inactive": "Este acesso está desativado. Fale com a recepção.",
+        "inactive": "Este acesso está desativado. Fale com o administrador.",
     }
 
     def __init__(self, *args, **kwargs):

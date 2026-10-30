@@ -10,7 +10,7 @@
   {% if not eh_hoje %}<a href="?">Voltar para hoje</a>{% endif %}
 </nav>
 
-<p><a class="botao" href="{% url 'agenda:recepcao_agendar' %}?dia={{ dia.isoformat }}">Agendar ou encaixar alguém</a></p>
+<p><a class="botao" href="{% url 'agenda:administrador_agendar' %}?dia={{ dia.isoformat }}">Agendar ou encaixar alguém</a></p>
 
 {% for coluna in colunas %}
   <section aria-labelledby="m-{{ coluna.massoterapeuta.pk }}" class="pilha">
@@ -31,9 +31,9 @@
                 <td>{% status ag %}</td>
                 <td>
                   <div class="agenda__linha">
-                    <a href="{% url 'agenda:recepcao_agendamento' ag.pk %}">Detalhes<span class="sr-only"> de {{ ag.inicio|hora }}, {{ ag.colaborador.nome }}</span></a>
+                    <a href="{% url 'agenda:administrador_agendamento' ag.pk %}">Detalhes<span class="sr-only"> de {{ ag.inicio|hora }}, {{ ag.colaborador.nome }}</span></a>
                     {% if ag.status == "agendado" or ag.status == "confirmado" %}
-                      <a href="{% url 'agenda:cancelar' ag.pk %}?de=recepcao">Cancelar<span class="sr-only"> {{ ag.inicio|hora }}, {{ ag.colaborador.nome }}</span></a>
+                      <a href="{% url 'agenda:cancelar' ag.pk %}?de=administrador">Cancelar<span class="sr-only"> {{ ag.inicio|hora }}, {{ ag.colaborador.nome }}</span></a>
                     {% endif %}
                   </div>
                 </td>

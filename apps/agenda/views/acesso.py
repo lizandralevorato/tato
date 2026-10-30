@@ -25,9 +25,9 @@ def papel_requerido(*papeis):
     return decorador
 
 
-colaborador = papel_requerido(Papel.COLABORADOR, Papel.RECEPCAO, Papel.GESTAO)
+colaborador = papel_requerido(Papel.COLABORADOR, Papel.ADMINISTRADOR, Papel.SESMT)
 massoterapeuta = papel_requerido(Papel.MASSOTERAPEUTA)
-equipe = papel_requerido(Papel.RECEPCAO, Papel.GESTAO)
+equipe = papel_requerido(Papel.ADMINISTRADOR, Papel.SESMT)
 
 
 def executar(request, acao, sucesso, destino, *args, **kwargs):

@@ -99,17 +99,17 @@ def test_agendamento_de_hoje_avisa_e_de_outro_dia_nao(
     assert "23h30" in enviados[0]["dados"]["corpo"]
 
 
-def test_cancelamento_pela_recepcao_avisa_os_dois(
-    massoterapeuta, colaborador, recepcao, hoje_tarde, enviados, django_capture_on_commit_callbacks
+def test_cancelamento_pela_administrador_avisa_os_dois(
+    massoterapeuta, colaborador, administrador, hoje_tarde, enviados, django_capture_on_commit_callbacks
 ):
     inscrever(massoterapeuta.usuario)
     inscrever(colaborador)
     with django_capture_on_commit_callbacks(execute=True):
-        servicos.cancelar(hoje_tarde, por=recepcao)
+        servicos.cancelar(hoje_tarde, por=administrador)
     destinos = {e["para"] for e in enviados}
     assert destinos == {f"https://push.exemplo.com/{massoterapeuta.usuario.pk}/1", f"https://push.exemplo.com/{colaborador.pk}/1"}
     textos = " ".join(e["dados"]["corpo"] for e in enviados)
-    assert "O horário ficou livre" in textos and "A recepção cancelou" in textos
+    assert "O horário ficou livre" in textos and "O administrador cancelou" in textos
 
 
 def test_cancelamento_pelo_proprio_colaborador_so_avisa_o_massoterapeuta(

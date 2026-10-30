@@ -29,12 +29,12 @@ const PAGINAS = [
   // Massoterapeuta
   "/massoterapeuta/",
   "/massoterapeuta/disponibilidade/",
-  // Recepção
-  "/recepcao/",
-  "/recepcao/agendar/",
-  "/recepcao/pessoas/",
-  "/recepcao/pessoas/nova/",
-  "/recepcao/regras/",
+  // Administrador
+  "/administrador/",
+  "/administrador/agendar/",
+  "/administrador/pessoas/",
+  "/administrador/pessoas/nova/",
+  "/administrador/regras/",
   "/comunicados/gerenciar/",
   "/comunicados/novo/",
   // Gestão

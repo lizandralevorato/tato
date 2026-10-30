@@ -21,7 +21,7 @@ def cedo(segunda, em):
 
 @pytest.fixture
 def gestao(unidade):
-    return criar_usuario("gestao@teste.local", Usuario.Papel.GESTAO, unidade, "Gestão")
+    return criar_usuario("sesmt@teste.local", Usuario.Papel.SESMT, unidade, "SESMT")
 
 
 # Regras do encaixe e da exceção

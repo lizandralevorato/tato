@@ -9,7 +9,7 @@ from django.utils.http import urlencode
 
 from apps.agenda.models import HistoricoAgendamento, Unidade
 from apps.agenda.views import acesso
-from apps.agenda.views.recepcao import unidade_da_equipe
+from apps.agenda.views.administrador import unidade_da_equipe
 
 from . import exportacao, indicadores
 from . import relatorio_colaboradores as relatorio

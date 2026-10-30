@@ -2,7 +2,7 @@
 {% block titulo %}Pessoas{% endblock %}
 {% block conteudo %}
 <h1>Pessoas</h1>
-<p class="introducao">Colaboradores, massoterapeutas e equipe da recepção{% if unidade %} de {{ unidade.nome }}{% endif %}.</p>
+<p class="introducao">Colaboradores, massoterapeutas e equipe do administrador{% if unidade %} de {{ unidade.nome }}{% endif %}.</p>
 <p><a class="botao" href="{% url 'agenda:pessoa_nova' %}">Cadastrar pessoa</a></p>
 
 <form method="get" class="cartao" role="search" aria-label="Procurar pessoas">

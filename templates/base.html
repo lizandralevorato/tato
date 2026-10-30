@@ -49,7 +49,7 @@
               <li><a href="{% url 'agenda:agora' %}" {% if nome_url == 'agenda:agora' %}aria-current="page"{% endif %}>Minha agenda</a></li>
               <li><a href="{% url 'agenda:disponibilidade' %}" {% if nome_url == 'agenda:disponibilidade' %}aria-current="page"{% endif %}>Meus horários</a></li>
             {% elif user.eh_equipe %}
-              <li><a href="{% url 'agenda:recepcao' %}" {% if nome_url == 'agenda:recepcao' or nome_url == 'agenda:recepcao_agendar' %}aria-current="page"{% endif %}>Agenda da unidade</a></li>
+              <li><a href="{% url 'agenda:administrador' %}" {% if nome_url == 'agenda:administrador' or nome_url == 'agenda:administrador_agendar' %}aria-current="page"{% endif %}>Agenda da unidade</a></li>
               <li><a href="{% url 'painel:inicio' %}" {% if nome_url == 'painel:inicio' or nome_url == 'painel:historico' %}aria-current="page"{% endif %}>Painel</a></li>
               <li><a href="{% url 'agenda:pessoas' %}" {% if nome_url == 'agenda:pessoas' or nome_url == 'agenda:pessoa' or nome_url == 'agenda:pessoa_nova' %}aria-current="page"{% endif %}>Pessoas</a></li>
               <li><a href="{% url 'agenda:regras' %}" {% if nome_url == 'agenda:regras' %}aria-current="page"{% endif %}>Regras</a></li>

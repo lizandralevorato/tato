@@ -21,7 +21,7 @@
     <li class="cartao"><span class="indicador__valor">{% if g.taxa_faltas is not None %}{{ g.taxa_faltas }}%{% else %}0%{% endif %}</span> <span class="indicador__rotulo">de faltas ({{ g.faltas }} falta{{ g.faltas|pluralize }})</span></li>
     <li class="cartao"><span class="indicador__valor">{{ g.cancelados }}</span> <span class="indicador__rotulo">cancelamento{{ g.cancelados|pluralize }}</span></li>
     <li class="cartao"><span class="indicador__valor">{{ g.liberados }}</span> <span class="indicador__rotulo">reserva{{ g.liberados|pluralize }} liberada{{ g.liberados|pluralize }} sem check-in</span></li>
-    <li class="cartao"><span class="indicador__valor">{{ g.encaixes }}</span> <span class="indicador__rotulo">pela recepção ou encaixe</span></li>
+    <li class="cartao"><span class="indicador__valor">{{ g.encaixes }}</span> <span class="indicador__rotulo">pelo administrador ou encaixe</span></li>
   </ul>
   <p class="ajuda">Ocupação = horários reservados (sem contar cancelados e liberados) dividido pelos horários oferecidos. Os horários oferecidos são calculados com a grade semanal atual de cada massoterapeuta, menos folgas e pausas.</p>
 </section>

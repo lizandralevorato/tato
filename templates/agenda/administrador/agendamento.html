@@ -2,7 +2,7 @@
 {% load agenda %}
 {% block titulo %}Agendamento de {{ ag.colaborador.nome }}{% endblock %}
 {% block conteudo %}
-<p><a href="{% url 'agenda:recepcao' %}?dia={{ ag.inicio|date:'Y-m-d' }}">Voltar para a agenda do dia</a></p>
+<p><a href="{% url 'agenda:administrador' %}?dia={{ ag.inicio|date:'Y-m-d' }}">Voltar para a agenda do dia</a></p>
 <h1>Agendamento</h1>
 
 <div class="cartao cartao--destaque">
@@ -16,17 +16,17 @@
   {% if pode_cancelar or pode_atender or pode_faltar %}
     <div class="acoes">
       {% if pode_atender %}
-        <form method="post" action="{% url 'agenda:recepcao_marcar' ag.pk 'atendido' %}">
+        <form method="post" action="{% url 'agenda:administrador_marcar' ag.pk 'atendido' %}">
           {% csrf_token %}<button type="submit" class="botao">Marcar atendido</button>
         </form>
       {% endif %}
       {% if pode_faltar %}
-        <form method="post" action="{% url 'agenda:recepcao_marcar' ag.pk 'faltou' %}">
+        <form method="post" action="{% url 'agenda:administrador_marcar' ag.pk 'faltou' %}">
           {% csrf_token %}<button type="submit" class="botao botao--perigo">Marcar falta</button>
         </form>
       {% endif %}
       {% if pode_cancelar %}
-        <a class="botao botao--perigo" href="{% url 'agenda:cancelar' ag.pk %}?de=recepcao">Cancelar agendamento</a>
+        <a class="botao botao--perigo" href="{% url 'agenda:cancelar' ag.pk %}?de=administrador">Cancelar agendamento</a>
       {% endif %}
     </div>
   {% endif %}

@@ -15,10 +15,10 @@ def inicio(request):
     papel = request.user.papel
     if papel == Usuario.Papel.MASSOTERAPEUTA:
         destino = reverse("agenda:agora")
-    elif papel == Usuario.Papel.GESTAO:
+    elif papel == Usuario.Papel.SESMT:
         destino = reverse("painel:inicio")
     elif request.user.eh_equipe:
-        destino = reverse("agenda:recepcao")
+        destino = reverse("agenda:administrador")
     else:
         destino = reverse("agenda:meus_agendamentos")
 

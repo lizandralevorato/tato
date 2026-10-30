@@ -16,7 +16,7 @@ class Unidade(models.Model):
 
 
 class PoliticaBeneficio(models.Model):
-    """Regras do benefício. A recepção e a gestão alteram pela tela Regras do benefício."""
+    """Regras do benefício. O administrador e a gestão alteram pela tela Regras do benefício."""
 
     unidade = models.OneToOneField(Unidade, on_delete=models.CASCADE, related_name="politica")
     max_por_semana = models.PositiveSmallIntegerField("máximo de massagens por semana", default=2)
@@ -158,7 +158,7 @@ class Agendamento(models.Model):
 
     class Origem(models.TextChoices):
         AUTOAGENDAMENTO = "autoagendamento", "Pelo próprio colaborador"
-        RECEPCAO = "recepcao", "Pela recepção"
+        ADMINISTRADOR = "administrador", "Pelo administrador"
         ENCAIXE = "encaixe", "Encaixe"
 
     PENDENTES = {Status.AGENDADO, Status.CONFIRMADO}
@@ -215,7 +215,7 @@ class HistoricoAgendamento(models.Model):
 
     class Acao(models.TextChoices):
         AGENDADO = "agendado", "Agendou"
-        AGENDADO_EQUIPE = "agendado_equipe", "Agendou pela recepção"
+        AGENDADO_EQUIPE = "agendado_equipe", "Agendou pelo administrador"
         ENCAIXE = "encaixe", "Encaixou"
         CHECKIN = "checkin", "Fez check-in"
         CHEGADA = "chegada", "Avisou a chegada"

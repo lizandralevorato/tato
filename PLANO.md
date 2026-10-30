@@ -13,7 +13,7 @@ Substituir a planilha da Silvana + Teams por um site onde:
 |---|---|
 | **Colaborador** | Vê horários livres, agenda, confirma presença ("vou / não vou"), cancela, faz check-in ("Cheguei") |
 | **Massoterapeuta** (baixa visão ou cegueira, sem computador corporativo, usa o **celular**) | Ouve/vê a agenda do dia, recebe aviso por voz/vibração de check-in e cancelamento, marca "atendido / faltou", pausa a agenda (água/banheiro), gerencia a própria disponibilidade |
-| **Recepção/Admin** (Silvana) | Trata exceções, faz encaixes, cadastra massoterapeutas e disponibilidades, vê relatórios |
+| **Administrador/Admin** (Silvana) | Trata exceções, faz encaixes, cadastra massoterapeutas e disponibilidades, vê relatórios |
 | **Gestão/RH** | Painel com ocupação, faltas, usuários únicos |
 
 ### Como cada problema do discovery é resolvido
@@ -159,7 +159,7 @@ maso/
 
 ```
 Unidade            nome (Londrina, São Paulo), fuso, ativa
-User (custom)      nome, e-mail, papel [colaborador | massoterapeuta | recepcao | gestao], unidade
+User (custom)      nome, e-mail, papel [colaborador | massoterapeuta | administrador | gestao], unidade
 PerfilAcessibilidade  user (1:1), tamanho_fonte, tema, espacamento, reduzir_movimento,
                       modo_simplificado, fala_ativa, fala_velocidade, vibracao, som
 Massoterapeuta     user (1:1), unidade, duracao_sessao (min), intervalo (min),
@@ -171,7 +171,7 @@ PoliticaBeneficio  unidade, max_por_semana=2, dias_diferentes=True, tolerancia_m
                    lembrete_min_antes
 Agendamento        colaborador, massoterapeuta, inicio, fim,
                    status [agendado, confirmado, cancelado, checkin, realizado, falta],
-                   origem [autoagendamento, recepcao, encaixe],
+                   origem [autoagendamento, administrador, encaixe],
                    criado_em, confirmado_em, cancelado_em, checkin_em, cancelado_por
 InscricaoPush      user, endpoint, chaves, user_agent
 Comunicado         (fase 4) título, texto, unidade, publicado_em
@@ -199,7 +199,7 @@ Todas testadas com testes unitários:
 
 1. Horário precisa estar dentro da disponibilidade e fora de bloqueios.
 2. Máximo **2 por semana**, em **dias diferentes**; faltas e encaixes **contam**.
-3. Cancelamento pelo colaborador só até **15 min antes**; depois disso, só a recepção.
+3. Cancelamento pelo colaborador só até **15 min antes**; depois disso, só o administrador.
 4. Após **5 min** de tolerância sem check-in → massoterapeuta pode marcar falta (ou o sistema sugere).
 5. Cancelou → vaga liberada imediatamente para encaixe + aviso ao massoterapeuta.
 6. Valores vêm de `PoliticaBeneficio` (Silvana/RH alteram sem mexer no código).
@@ -227,7 +227,7 @@ Referência de capacidade (discovery): atendimento das 8h às 11h40 e das 13h à
 
 Avisos em tempo real: check-in, cancelamento, novo encaixe, "próximo em 5 min" → região `aria-live` + fala (se ativada) + vibração + push.
 
-### Recepção (Silvana)
+### Administrador (Silvana)
 - Agenda do dia de todos os massoterapeutas, **encaixe manual**, cancelar/remarcar por qualquer pessoa
 - Cadastro de massoterapeutas, disponibilidades, bloqueios, política do benefício
 - Django Admin para cadastros raros (personalizado e testado com teclado)
@@ -325,14 +325,14 @@ Feito:
 - Preferências por pessoa, com tela de primeiro acesso
 - Colaborador: agendar em 3 passos (dia → horário → confirmar), "Vou / Não vou", "Cheguei", regras do benefício aplicadas
 - Massoterapeuta: tela "Minha agenda" com próximo atendimento, atendido/faltou, pausa rápida, "Ouvir agenda de hoje", atualização automática com anúncio falado/vibração/bipe (novo agendamento, chegada, cancelamento, 5 min antes)
-- Recepção: agenda do dia por massoterapeuta, cancelar qualquer agendamento, cadastros pelo admin
+- Administrador: agenda do dia por massoterapeuta, cancelar qualquer agendamento, cadastros pelo admin
 - 41 testes (regras + checagens de acessibilidade do HTML)
 
 Próximo:
 - Responder a seção 8 (principalmente duração da sessão e quem edita a disponibilidade)
 - Testar com TalkBack/VoiceOver no celular real e com o axe-core (Playwright)
 - Fase 2: service worker + Web Push, lembrete "vou / não vou"
-- Encaixe manual pela recepção fora do admin
+- Encaixe manual pelo administrador fora do admin
 
 **30/09/2026: Fase 2 (notificações e lembretes) concluída no código**
 
@@ -340,7 +340,7 @@ Feito:
 - App `notificacoes`: Web Push com VAPID próprio (`pywebpush`, gratuito), histórico de avisos com proteção contra duplicidade, reenvio automático de falhas, remoção de aparelhos que saíram
 - Service worker + PWA instalável (ícones PNG para Android/iPhone, página sem internet que não guarda dados pessoais)
 - Massoterapeuta recebe: novo agendamento do dia, chegada, cancelamento do dia, "próximo em 5 minutos"; se a tela estiver aberta, o aviso vai direto para o leitor de tela/voz e a agenda atualiza na hora
-- Colaborador recebe lembrete com botões **Vou / Não vou** (60 min antes, configurável; respeita o prazo de cancelamento) e aviso quando a recepção cancela
+- Colaborador recebe lembrete com botões **Vou / Não vou** (60 min antes, configurável; respeita o prazo de cancelamento) e aviso quando o administrador cancela
 - Painel "Ativar notificações neste aparelho" em Preferências e nas telas principais, com instruções para iPhone (Tela de Início) e para permissão bloqueada
 - Processador periódico sem Redis: `manage.py notificacoes --continuo` (ou agendado a cada minuto). O `django-q2` previsto no plano não foi necessário
 - 66 testes no total
@@ -361,18 +361,18 @@ Decisões tomadas na implementação (todas configuráveis no admin):
 - Horários que já passaram não são liberados.
 - O antigo "check-in" na porta da sala virou **chegada** ("Cheguei"), para não confundir.
 
-A confirmar com RH/recepção: se a reserva liberada deve contar no limite semanal. A abertura de 2 h foi aprovada em 07/10/2026.
+A confirmar com RH/administrador: se a reserva liberada deve contar no limite semanal. A abertura de 2 h foi aprovada em 07/10/2026.
 
 **07/10/2026: tudo pela tela, lista de espera, painel e comunicados**
 
 Feito:
 - Tudo que antes exigia o admin agora tem tela própria, com as mesmas regras de acessibilidade:
   - Massoterapeuta edita os próprios horários semanais e marca folgas e férias (Meus horários). Se houver gente marcada no período, o site lista as pessoas e só cancela com confirmação, avisando cada uma.
-  - Recepção agenda para qualquer pessoa, faz encaixe fora da grade (se a sessão inteira couber) e pode marcar uma exceção às regras do benefício, que fica registrada.
-  - Recepção cadastra e edita pessoas (incluindo massoterapeutas, duração e intervalo da sessão) e as regras do benefício.
+  - Administrador agenda para qualquer pessoa, faz encaixe fora da grade (se a sessão inteira couber) e pode marcar uma exceção às regras do benefício, que fica registrada.
+  - Administrador cadastra e edita pessoas (incluindo massoterapeutas, duração e intervalo da sessão) e as regras do benefício.
   - O admin do Django continua existindo só para o superusuário (unidades e correções raras).
 - Lista de espera ("me avise se abrir vaga") por dia, com um massoterapeuta ou qualquer um. Quando alguém cancela ou uma reserva é liberada sem check-in, todos que esperam por aquele dia recebem um aviso; quem agendar primeiro fica com o horário.
-- Histórico de alterações de cada agendamento (quem agendou, encaixou, fez check-in, cancelou, marcou falta). Foi feito com um modelo próprio em vez do `django-simple-history`, para mostrar o histórico em linguagem simples na tela da recepção e no painel.
+- Histórico de alterações de cada agendamento (quem agendou, encaixou, fez check-in, cancelou, marcou falta). Foi feito com um modelo próprio em vez do `django-simple-history`, para mostrar o histórico em linguagem simples na tela do administrador e no painel.
 - Painel da gestão: ocupação, atendimentos, usuários únicos, faltas, cancelamentos, liberações e encaixes, por massoterapeuta e por semana, com tabela e exportação para CSV. O papel Gestão entra direto no painel.
 - Página pública "Como funciona o benefício", com as regras da unidade.
 - VLibras carregado sob demanda (link no rodapé) ou sempre, se a pessoa ligar nas preferências.

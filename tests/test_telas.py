@@ -120,9 +120,9 @@ def test_colaborador_nao_acessa_tela_do_massoterapeuta(client, colaborador):
     assert client.get(reverse("agenda:agora")).status_code == 403
 
 
-def test_massoterapeuta_nao_acessa_recepcao(client, massoterapeuta):
+def test_massoterapeuta_nao_acessa_administrador(client, massoterapeuta):
     entrar(client, massoterapeuta.usuario)
-    assert client.get(reverse("agenda:recepcao")).status_code == 403
+    assert client.get(reverse("agenda:administrador")).status_code == 403
 
 
 def test_primeiro_acesso_passa_pelas_preferencias(client, colaborador):
@@ -163,10 +163,10 @@ def test_paginas_do_massoterapeuta(client, massoterapeuta, colaborador, amanha_8
     verificar_acessibilidade(resposta.content.decode())
 
 
-def test_pagina_da_recepcao(client, recepcao, massoterapeuta, colaborador, amanha_8h):
+def test_pagina_da_administrador(client, administrador, massoterapeuta, colaborador, amanha_8h):
     servicos.agendar(colaborador, massoterapeuta, amanha_8h)
-    entrar(client, recepcao)
-    resposta = client.get(reverse("agenda:recepcao") + f"?dia={amanha_8h.date().isoformat()}")
+    entrar(client, administrador)
+    resposta = client.get(reverse("agenda:administrador") + f"?dia={amanha_8h.date().isoformat()}")
     html = resposta.content.decode()
     assert resposta.status_code == 200
     assert "<caption" in html and 'scope="col"' in html

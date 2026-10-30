@@ -52,8 +52,8 @@ def colaborador2(unidade):
 
 
 @pytest.fixture
-def recepcao(unidade):
-    return criar_usuario("recepcao@teste.local", Usuario.Papel.RECEPCAO, unidade, "Recepção")
+def administrador(unidade):
+    return criar_usuario("administrador@teste.local", Usuario.Papel.ADMINISTRADOR, unidade, "Administrador")
 
 
 @pytest.fixture

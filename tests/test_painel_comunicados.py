@@ -19,11 +19,11 @@ def cedo(segunda, em):
 
 
 @pytest.fixture
-def semana_movimentada(massoterapeuta, colaborador, colaborador2, recepcao, segunda, em, cedo):
+def semana_movimentada(massoterapeuta, colaborador, colaborador2, administrador, segunda, em, cedo):
     """Segunda: Ana atendida, Bruno faltou. Terça: Ana cancelou."""
     atendida = servicos.agendar(colaborador, massoterapeuta, em(segunda, 8), agora=cedo)
     servicos.marcar_realizado(atendida, agora=em(segunda, 8, 5))
-    falta = servicos.agendar(colaborador2, massoterapeuta, em(segunda, 8, 40), agora=cedo, por=recepcao)
+    falta = servicos.agendar(colaborador2, massoterapeuta, em(segunda, 8, 40), agora=cedo, por=administrador)
     servicos.marcar_falta(falta, agora=em(segunda, 8, 50))
     cancelada = servicos.agendar(colaborador, massoterapeuta, em(segunda + timedelta(days=1), 8), agora=cedo)
     servicos.cancelar(cancelada, por=colaborador, agora=cedo)
@@ -48,8 +48,8 @@ def test_folga_reduz_horarios_oferecidos(massoterapeuta, unidade, segunda, em):
     assert indicadores.resumo(unidade, segunda, segunda)["geral"].oferecidos == 0
 
 
-def test_tela_do_painel_e_csv(client, recepcao, semana_movimentada, segunda):
-    entrar(client, recepcao)
+def test_tela_do_painel_e_csv(client, administrador, semana_movimentada, segunda):
+    entrar(client, administrador)
     filtros = {"de": segunda.isoformat(), "ate": (segunda + timedelta(days=6)).isoformat()}
     html = client.get(reverse("painel:inicio"), filtros).content.decode()
     assert "massagens feitas" in html and "<caption" in html
@@ -59,14 +59,14 @@ def test_tela_do_painel_e_csv(client, recepcao, semana_movimentada, segunda):
     linhas = csv.strip().splitlines()
     assert linhas[0].startswith("Data;Hora;Massoterapeuta")
     assert len(linhas) == 4
-    assert "Faltou" in csv and "Pela recepção" in csv
+    assert "Faltou" in csv and "Pelo administrador" in csv
 
     resumo = client.get(reverse("painel:csv_resumo"), filtros).content.decode("utf-8-sig")
     assert "Carlos;84;2;" in resumo
 
 
-def test_excel_de_agendamentos_e_resumo(client, recepcao, semana_movimentada, segunda):
-    entrar(client, recepcao)
+def test_excel_de_agendamentos_e_resumo(client, administrador, semana_movimentada, segunda):
+    entrar(client, administrador)
     filtros = {"de": segunda.isoformat(), "ate": (segunda + timedelta(days=6)).isoformat()}
 
     resposta = client.get(reverse("painel:xlsx_agendamentos"), filtros)
@@ -80,10 +80,10 @@ def test_excel_de_agendamentos_e_resumo(client, recepcao, semana_movimentada, se
     assert resumo["Por massoterapeuta"]["A2"].value == "Carlos"
 
 
-def test_excel_nao_executa_formula_do_cadastro(client, recepcao, colaborador, semana_movimentada, segunda):
+def test_excel_nao_executa_formula_do_cadastro(client, administrador, colaborador, semana_movimentada, segunda):
     colaborador.first_name = "=1+1"
     colaborador.save()
-    entrar(client, recepcao)
+    entrar(client, administrador)
     filtros = {"de": segunda.isoformat(), "ate": (segunda + timedelta(days=6)).isoformat()}
     planilha = load_workbook(BytesIO(client.get(reverse("painel:xlsx_agendamentos"), filtros).content))
     celulas = [c for linha in planilha["Reservas"].iter_rows(min_row=2) for c in linha if c.value == "=1+1"]
@@ -96,21 +96,21 @@ def test_excel_so_para_a_equipe(client, colaborador):
     assert client.get(reverse("painel:xlsx_resumo")).status_code == 403
 
 
-def test_tela_de_historico(client, recepcao, semana_movimentada, segunda):
-    entrar(client, recepcao)
+def test_tela_de_historico(client, administrador, semana_movimentada, segunda):
+    entrar(client, administrador)
     hoje = segunda - timedelta(days=7)
     filtros = {"de": hoje.isoformat(), "ate": (segunda + timedelta(days=6)).isoformat()}
     html = client.get(reverse("painel:historico"), filtros).content.decode()
-    assert "Marcou falta" in html and "Agendou pela recepção" in html
+    assert "Marcou falta" in html and "Agendou pelo administrador" in html
     verificar_acessibilidade(html)
 
 
 # Comunicados
 
 
-def test_comunicado_para_massoterapeutas(client, recepcao, massoterapeuta, colaborador):
+def test_comunicado_para_massoterapeutas(client, administrador, massoterapeuta, colaborador):
     InscricaoPush.objects.create(usuario=massoterapeuta.usuario, endpoint="https://push.exemplo.com/1", p256dh="p", auth="a")
-    entrar(client, recepcao)
+    entrar(client, administrador)
     verificar_acessibilidade(client.get(reverse("comunicados:novo")).content.decode())
     resposta = client.post(
         reverse("comunicados:novo"),
@@ -137,8 +137,8 @@ def test_comunicado_para_massoterapeutas(client, recepcao, massoterapeuta, colab
     assert "Sala nova" not in client.get(reverse("comunicados:lista")).content.decode()
 
 
-def test_comunicado_para_todos_aparece_para_colaborador(client, colaborador, recepcao):
-    Comunicado.objects.create(titulo="Massagem de graça", texto="Agende já.", publico="todos", autor=recepcao)
+def test_comunicado_para_todos_aparece_para_colaborador(client, colaborador, administrador):
+    Comunicado.objects.create(titulo="Massagem de graça", texto="Agende já.", publico="todos", autor=administrador)
     entrar(client, colaborador)
     html = client.get(reverse("agenda:meus_agendamentos")).content.decode()
     assert 'href="/comunicados/"' in html

@@ -46,7 +46,7 @@ Cole as três linhas no `.env` e depois:
 
 | Apelido | Papel | Preferências de teste |
 |---|---|---|
-| `recepcao` | Recepção (também é superusuário e acessa `/admin/`) | padrão |
+| `administrador` | Administrador (também é superusuário e acessa `/admin/`) | padrão |
 | `gestao` | Gestão (entra no painel) | padrão |
 | `carlos` | Massoterapeuta | alto contraste escuro, texto 200%, fala ligada |
 | `andre` | Massoterapeuta | escuro, texto 150% |
@@ -66,7 +66,7 @@ Cole as três linhas no `.env` e depois:
   acessibilidade em todas as páginas (`lang`, um `h1`, link "pular", rótulos de campos,
   ids únicos, zoom liberado).
 - `tests/test_notificacoes.py`: quem recebe cada aviso, lembrete (janela, sem duplicar), falhas de envio, link assinado, inscrição do aparelho, service worker.
-- `tests/test_recepcao.py`: agendar para alguém, encaixe, exceção às regras, histórico, cadastro de pessoas e regras.
+- `tests/test_administrador.py`: agendar para alguém, encaixe, exceção às regras, histórico, cadastro de pessoas e regras.
 - `tests/test_massoterapeuta.py`: horários semanais, folgas com confirmação de cancelamento.
 - `tests/test_lista_espera.py`: aviso de vaga ao cancelar ou liberar, quem sai da lista.
 - `tests/test_painel_comunicados.py`: indicadores, CSV, histórico, comunicados, "Como funciona" e Libras.
@@ -81,7 +81,7 @@ npm run lighthouse
 ```
 
 - Sobe um servidor próprio na porta 8020 (não atrapalha o da 8010) e roda o Lighthouse em
-  19 páginas: públicas, colaborador, massoterapeuta, recepção e gestão.
+  19 páginas: públicas, colaborador, massoterapeuta, administrador e gestão.
 - Entra sozinho com as contas de `popular_demo` ([lighthouse/entrar.js](lighthouse/entrar.js)),
   então rode `popular_demo` antes. O massoterapeuta é o `carlos` (alto contraste, texto 200%).
 - **Falha se alguma página ficar abaixo de 100 em acessibilidade.** Desempenho, boas práticas
@@ -103,7 +103,7 @@ apps/agenda/
   servicos.py           TODAS as regras de negócio (as views só chamam daqui)
   formatacao.py         "9h20", "amanhã, quinta-feira, 1 de outubro"
   forms.py              horários, ausências, pessoas, regras do benefício
-  views/                colaborador, massoterapeuta, recepcao (inclui cadastros), paginas
+  views/                colaborador, massoterapeuta, administrador (inclui cadastros), paginas
 apps/notificacoes/
   avisos.py             quem é avisado de quê (chamado pelas regras da agenda)
   push.py               envio Web Push e tratamento de falhas
@@ -122,8 +122,8 @@ static/js/libras.js     carrega o VLibras só quando a pessoa pede
 
 - **Colaborador**: agenda em 3 passos, faz check-in, avisa a chegada, cancela, entra na lista de espera de dias lotados e lê comunicados para todos.
 - **Massoterapeuta**: vê a agenda do dia ao vivo, marca atendido ou falta, pausa, edita os próprios horários semanais e marca folgas e férias (Meus horários), lê comunicados.
-- **Recepção**: agenda do dia por massoterapeuta, agendar ou encaixar alguém (com opção de exceção às regras), detalhes e histórico de cada agendamento, cadastro de pessoas, regras do benefício, comunicados.
-- **Gestão**: tudo o que a recepção faz, e entra direto no Painel (ocupação, faltas, cancelamentos, usuários únicos, CSV, histórico).
+- **Administrador**: agenda do dia por massoterapeuta, agendar ou encaixar alguém (com opção de exceção às regras), detalhes e histórico de cada agendamento, cadastro de pessoas, regras do benefício, comunicados.
+- **Gestão**: tudo o que o administrador faz, e entra direto no Painel (ocupação, faltas, cancelamentos, usuários únicos, CSV, histórico).
 - **Todos, sem login**: página pública [Como funciona](http://localhost:8010/como-funciona/) e a declaração de acessibilidade.
 
 O admin do Django (`/admin/`) fica só para o superusuário: cadastro de unidades e correções raras.
@@ -135,7 +135,7 @@ O admin do Django (`/admin/`) fica só para o superusuário: cadastro de unidade
 - Quem agenda com o check-in já aberto (em cima da hora) fica com check-in feito automaticamente.
 - Horários que já passaram não são liberados (ficam para o massoterapeuta marcar atendido ou falta).
 - A liberação roda no comando `notificacoes` e também antes de listar horários, então funciona mesmo com o processador parado.
-- Tudo configurável por unidade na tela *Regras* da recepção (prazo 0 desliga o check-in obrigatório).
+- Tudo configurável por unidade na tela *Regras* do administrador (prazo 0 desliga o check-in obrigatório).
 - O botão **"Cheguei"** (na porta da sala) continua existindo e agora se chama *chegada* no código.
 
 ## Notificações (Fase 2)
@@ -144,7 +144,7 @@ O admin do Django (`/admin/`) fica só para o superusuário: cadastro de unidade
 - **Service worker** em `/sw.js` ([templates/notificacoes/sw.js](templates/notificacoes/sw.js)): mostra a notificação com texto completo, vibração conforme a preferência da pessoa e os botões **Vou / Não vou** no lembrete. Se o site estiver aberto na tela, não duplica: repassa o aviso para a página, que anuncia pelo leitor de tela e atualiza a agenda na hora.
 - **Quem recebe o quê**:
   - Massoterapeuta: novo agendamento do dia, chegada ("Ana chegou"), cancelamento do dia, "próximo em 5 minutos".
-  - Colaborador: lembrete de check-in no tempo escolhido em Preferências (15, 30, 45 min, 1, 2 ou 3 h antes do prazo; padrão 1 h, igual ao comportamento anterior), último aviso no prazo (1 h antes da massagem), aviso de reserva liberada e aviso quando a recepção cancela. Se o lembrete sair antes de o check-in abrir, ele informa o horário de abertura. Os lembretes têm os botões **Fazer check-in / Não vou**.
+  - Colaborador: lembrete de check-in no tempo escolhido em Preferências (15, 30, 45 min, 1, 2 ou 3 h antes do prazo; padrão 1 h, igual ao comportamento anterior), último aviso no prazo (1 h antes da massagem), aviso de reserva liberada e aviso quando o administrador cancela. Se o lembrete sair antes de o check-in abrir, ele informa o horário de abertura. Os lembretes têm os botões **Fazer check-in / Não vou**.
   - Massoterapeuta e todos: comunicados, se quem publicou marcar "avisar no celular".
   - Lista de espera: aviso "Abriu uma vaga" quando alguém cancela ou uma reserva é liberada.
   - Tempos configuráveis por unidade na tela Regras (0 desliga).

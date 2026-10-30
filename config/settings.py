@@ -149,4 +149,4 @@ if not DEBUG:
 # Web Push (notificações). Gere com: python manage.py gerar_chaves_vapid
 VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY", "")
 VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY", "")
-VAPID_CONTATO = os.getenv("VAPID_CONTATO", "mailto:recepcao@suaempresa.com.br")
+VAPID_CONTATO = os.getenv("VAPID_CONTATO", "mailto:administrador@suaempresa.com.br")

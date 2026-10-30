@@ -27,4 +27,4 @@ class Command(BaseCommand):
         self.stdout.write("# Cole no arquivo .env (não versionar a chave privada):")
         self.stdout.write(f"VAPID_PUBLIC_KEY={_b64url(publica)}")
         self.stdout.write(f"VAPID_PRIVATE_KEY={_b64url(privada)}")
-        self.stdout.write("VAPID_CONTATO=mailto:recepcao@suaempresa.com.br")
+        self.stdout.write("VAPID_CONTATO=mailto:administrador@suaempresa.com.br")

@@ -11,9 +11,9 @@ const path = require("node:path");
 // Primeiro prefixo que casar decide quem entra. Sem conta = página pública.
 const CONTA_POR_CAMINHO = [
   ["/massoterapeuta/", "carlos@demo.local"], // alto contraste escuro, texto 200%
-  ["/recepcao/", "recepcao@demo.local"],
-  ["/comunicados/gerenciar/", "recepcao@demo.local"],
-  ["/comunicados/novo/", "recepcao@demo.local"],
+  ["/administrador/", "administrador@demo.local"],
+  ["/comunicados/gerenciar/", "administrador@demo.local"],
+  ["/comunicados/novo/", "administrador@demo.local"],
   ["/painel/", "gestao@demo.local"],
   ["/meus-agendamentos/", "ana@demo.local"],
   ["/agendar/", "ana@demo.local"],

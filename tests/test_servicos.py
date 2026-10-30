@@ -48,9 +48,9 @@ def test_banco_impede_dois_agendamentos_no_mesmo_horario(massoterapeuta, colabor
         Agendamento.objects.create(colaborador=colaborador2, massoterapeuta=massoterapeuta, inicio=inicio, fim=inicio + timedelta(minutes=20))
 
 
-def test_horario_cancelado_volta_a_ficar_livre(massoterapeuta, colaborador, colaborador2, recepcao, segunda, em, cedo):
+def test_horario_cancelado_volta_a_ficar_livre(massoterapeuta, colaborador, colaborador2, administrador, segunda, em, cedo):
     ag = servicos.agendar(colaborador, massoterapeuta, em(segunda, 9, 20), agora=cedo)
-    servicos.cancelar(ag, por=recepcao, agora=cedo)
+    servicos.cancelar(ag, por=administrador, agora=cedo)
     servicos.agendar(colaborador2, massoterapeuta, em(segunda, 9, 20), agora=cedo)
 
 
@@ -69,11 +69,11 @@ def test_limite_de_duas_por_semana(massoterapeuta, colaborador, segunda, em, ced
     servicos.agendar(colaborador, massoterapeuta, em(segunda + timedelta(days=7), 8), agora=cedo)
 
 
-def test_falta_conta_no_limite_e_cancelamento_nao(massoterapeuta, colaborador, recepcao, segunda, em, cedo):
+def test_falta_conta_no_limite_e_cancelamento_nao(massoterapeuta, colaborador, administrador, segunda, em, cedo):
     primeira = servicos.agendar(colaborador, massoterapeuta, em(segunda, 8), agora=cedo)
     segunda_vez = servicos.agendar(colaborador, massoterapeuta, em(segunda + timedelta(days=1), 8), agora=cedo)
     servicos.marcar_falta(primeira, agora=em(segunda, 8, 6))
-    servicos.cancelar(segunda_vez, por=recepcao, agora=cedo)
+    servicos.cancelar(segunda_vez, por=administrador, agora=cedo)
     assert servicos.uso_na_semana(colaborador, segunda, servicos.politica_da(massoterapeuta.unidade)) == 1
 
 
@@ -85,10 +85,10 @@ def test_colaborador_so_cancela_ate_15_minutos_antes(massoterapeuta, colaborador
     assert ag.status == Agendamento.Status.CANCELADO
 
 
-def test_recepcao_cancela_a_qualquer_momento(massoterapeuta, colaborador, recepcao, segunda, em, cedo):
+def test_administrador_cancela_a_qualquer_momento(massoterapeuta, colaborador, administrador, segunda, em, cedo):
     ag = servicos.agendar(colaborador, massoterapeuta, em(segunda, 9, 20), agora=cedo)
-    servicos.cancelar(ag, por=recepcao, agora=em(segunda, 9, 19))
-    assert ag.cancelado_por == recepcao
+    servicos.cancelar(ag, por=administrador, agora=em(segunda, 9, 19))
+    assert ag.cancelado_por == administrador
 
 
 # Check-in (confirmar que vai): prazo 1 h antes, tolerância 5 min

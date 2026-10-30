@@ -23,7 +23,7 @@ class UsuarioManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra):
         extra.setdefault("is_staff", True)
         extra.setdefault("is_superuser", True)
-        extra.setdefault("papel", Usuario.Papel.RECEPCAO)
+        extra.setdefault("papel", Usuario.Papel.ADMINISTRADOR)
         return self._criar(email, password, **extra)
 
 
@@ -33,8 +33,8 @@ class Usuario(AbstractUser):
     class Papel(models.TextChoices):
         COLABORADOR = "colaborador", "Colaborador"
         MASSOTERAPEUTA = "massoterapeuta", "Massoterapeuta"
-        RECEPCAO = "recepcao", "Recepção"
-        GESTAO = "gestao", "Gestão"
+        ADMINISTRADOR = "administrador", "Administrador"
+        SESMT = "sesmt", "SESMT"
 
     username = None
     email = models.EmailField("e-mail", unique=True)
@@ -79,8 +79,8 @@ class Usuario(AbstractUser):
 
     @property
     def eh_equipe(self):
-        """Recepção e gestão tratam exceções de qualquer agendamento."""
-        return self.papel in {self.Papel.RECEPCAO, self.Papel.GESTAO} or self.is_superuser
+        """Administrador e SESMT tratam exceções de qualquer agendamento."""
+        return self.papel in {self.Papel.ADMINISTRADOR, self.Papel.SESMT} or self.is_superuser
 
 
 class PerfilAcessibilidade(models.Model):

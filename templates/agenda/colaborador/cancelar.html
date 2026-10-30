@@ -11,7 +11,7 @@
   {% csrf_token %}
   <div class="acoes">
     <button type="submit" class="botao botao--perigo botao--grande">Sim, cancelar</button>
-    <a class="botao botao--secundario botao--grande" href="{% if de == 'recepcao' %}{% url 'agenda:recepcao' %}{% else %}{% url 'agenda:meus_agendamentos' %}{% endif %}">Não, manter</a>
+    <a class="botao botao--secundario botao--grande" href="{% if de == 'administrador' %}{% url 'agenda:administrador' %}{% else %}{% url 'agenda:meus_agendamentos' %}{% endif %}">Não, manter</a>
   </div>
 </form>
 {% endblock %}

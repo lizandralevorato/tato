@@ -89,7 +89,7 @@
     }
     if (!chave) {
       // Problema do servidor: só aparece em Preferências, não nas telas do dia a dia.
-      escreverEstado(painel, "As notificações ainda não foram configuradas no servidor. Avise a recepção.");
+      escreverEstado(painel, "As notificações ainda não foram configuradas no servidor. Avise o administrador.");
       mostrar(painel, []);
       return Promise.resolve();
     }
