@@ -14,7 +14,7 @@ Substituir a planilha da Silvana + Teams por um site onde:
 | **Colaborador** | Vê horários livres, agenda, confirma presença ("vou / não vou"), cancela, faz check-in ("Cheguei") |
 | **Massoterapeuta** (baixa visão ou cegueira, sem computador corporativo, usa o **celular**) | Ouve/vê a agenda do dia, recebe aviso por voz/vibração de check-in e cancelamento, marca "atendido / faltou", pausa a agenda (água/banheiro), gerencia a própria disponibilidade |
 | **Administrador/Admin** (Silvana) | Trata exceções, faz encaixes, cadastra massoterapeutas e disponibilidades, vê relatórios |
-| **Gestão/RH** | Painel com ocupação, faltas, usuários únicos |
+| **SESMT** | Painel com ocupação, faltas, usuários únicos |
 
 ### Como cada problema do discovery é resolvido
 
@@ -143,7 +143,7 @@ maso/
 │  ├─ agenda/              # Unidade, Massoterapeuta, Disponibilidade, Bloqueio, Agendamento, Política
 │  │   └─ services.py      # regras de negócio (geração de horários, validações)
 │  ├─ notificacoes/        # lembretes, push, inscrições, tarefas django-q2
-│  └─ painel/              # dashboard e relatórios da gestão
+│  └─ painel/              # dashboard e relatórios do SESMT
 ├─ templates/
 │  ├─ base.html            # skip link, landmarks, região aria-live, classes de preferência
 │  └─ componentes/         # botao, campo, alerta, cartao_agendamento... (acessíveis por padrão)
@@ -159,7 +159,7 @@ maso/
 
 ```
 Unidade            nome (Londrina, São Paulo), fuso, ativa
-User (custom)      nome, e-mail, papel [colaborador | massoterapeuta | administrador | gestao], unidade
+User (custom)      nome, e-mail, papel [colaborador | massoterapeuta | administrador | sesmt], unidade
 PerfilAcessibilidade  user (1:1), tamanho_fonte, tema, espacamento, reduzir_movimento,
                       modo_simplificado, fala_ativa, fala_velocidade, vibracao, som
 Massoterapeuta     user (1:1), unidade, duracao_sessao (min), intervalo (min),
@@ -232,7 +232,7 @@ Avisos em tempo real: check-in, cancelamento, novo encaixe, "próximo em 5 min" 
 - Cadastro de massoterapeutas, disponibilidades, bloqueios, política do benefício
 - Django Admin para cadastros raros (personalizado e testado com teclado)
 
-### Gestão
+### SESMT
 - Painel: taxa de ocupação, no-show, cancelamentos, encaixes, usuários únicos, por massoterapeuta/unidade/período
 - Todo gráfico tem **tabela equivalente** + exportar CSV
 
@@ -262,8 +262,8 @@ Avisos em tempo real: check-in, cancelamento, novo encaixe, "próximo em 5 min" 
 - Pausa da agenda; liberação automática de vaga e encaixe
 - Opcional: lista de espera ("me avise se abrir vaga")
 
-### Fase 3: Dados e gestão (1 a 2 semanas) → problema #2
-- Painel da gestão + tabela + CSV
+### Fase 3: Dados e SESMT (1 a 2 semanas) → problema #2
+- Painel do SESMT + tabela + CSV
 - Histórico de alterações
 
 ### Fase 4: Evolução (contínuo) → problemas #4 (divulgação), #9, SP
@@ -373,7 +373,7 @@ Feito:
   - O admin do Django continua existindo só para o superusuário (unidades e correções raras).
 - Lista de espera ("me avise se abrir vaga") por dia, com um massoterapeuta ou qualquer um. Quando alguém cancela ou uma reserva é liberada sem check-in, todos que esperam por aquele dia recebem um aviso; quem agendar primeiro fica com o horário.
 - Histórico de alterações de cada agendamento (quem agendou, encaixou, fez check-in, cancelou, marcou falta). Foi feito com um modelo próprio em vez do `django-simple-history`, para mostrar o histórico em linguagem simples na tela do administrador e no painel.
-- Painel da gestão: ocupação, atendimentos, usuários únicos, faltas, cancelamentos, liberações e encaixes, por massoterapeuta e por semana, com tabela e exportação para CSV. O papel Gestão entra direto no painel.
+- Painel do SESMT: ocupação, atendimentos, usuários únicos, faltas, cancelamentos, liberações e encaixes, por massoterapeuta e por semana, com tabela e exportação para CSV. O papel SESMT entra direto no painel.
 - Página pública "Como funciona o benefício", com as regras da unidade.
 - VLibras carregado sob demanda (link no rodapé) ou sempre, se a pessoa ligar nas preferências.
 - Comunicados da empresa para massoterapeutas ou para todos, com aviso opcional no celular e marcação de "novo".

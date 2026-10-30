@@ -1,4 +1,4 @@
-"""Números do painel da gestão, calculados a partir dos agendamentos."""
+"""Números do painel do SESMT, calculados a partir dos agendamentos."""
 
 from collections import Counter
 from dataclasses import dataclass, field

@@ -37,7 +37,7 @@ const PAGINAS = [
   "/administrador/regras/",
   "/comunicados/gerenciar/",
   "/comunicados/novo/",
-  // Gestão
+  // SESMT
   "/painel/",
   "/painel/historico/",
 ];

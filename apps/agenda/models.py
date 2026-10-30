@@ -16,7 +16,7 @@ class Unidade(models.Model):
 
 
 class PoliticaBeneficio(models.Model):
-    """Regras do benefício. O administrador e a gestão alteram pela tela Regras do benefício."""
+    """Regras do benefício. O administrador e o SESMT alteram pela tela Regras do benefício."""
 
     unidade = models.OneToOneField(Unidade, on_delete=models.CASCADE, related_name="politica")
     max_por_semana = models.PositiveSmallIntegerField("máximo de massagens por semana", default=2)

@@ -27,7 +27,7 @@ urlpatterns = [
     path("massoterapeuta/ausencias/<int:pk>/remover/", massoterapeuta.remover_ausencia, name="remover_ausencia"),
     path("massoterapeuta/agendamentos/<int:pk>/atendido/", massoterapeuta.marcar_atendido, name="atendido"),
     path("massoterapeuta/agendamentos/<int:pk>/faltou/", massoterapeuta.marcar_falta, name="faltou"),
-    # Administrador e gestão
+    # Administrador e SESMT
     path("administrador/", administrador.agenda_da_unidade, name="administrador"),
     path("administrador/agendar/", administrador.agendar_para, name="administrador_agendar"),
     path("administrador/agendamentos/<int:pk>/", administrador.agendamento_detalhe, name="administrador_agendamento"),

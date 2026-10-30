@@ -20,7 +20,7 @@ def cedo(segunda, em):
 
 
 @pytest.fixture
-def gestao(unidade):
+def sesmt(unidade):
     return criar_usuario("sesmt@teste.local", Usuario.Papel.SESMT, unidade, "SESMT")
 
 
@@ -160,6 +160,6 @@ def test_colaborador_nao_entra_nas_telas_da_equipe(client, colaborador):
         assert client.get(reverse(nome)).status_code == 403
 
 
-def test_gestao_cai_no_painel(client, gestao):
-    assert client.login(email=gestao.email, password=SENHA)
+def test_sesmt_cai_no_painel(client, sesmt):
+    assert client.login(email=sesmt.email, password=SENHA)
     assert client.get(reverse("inicio")).url == reverse("painel:inicio")

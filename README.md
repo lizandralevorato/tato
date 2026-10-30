@@ -47,7 +47,7 @@ Cole as três linhas no `.env` e depois:
 | Apelido | Papel | Preferências de teste |
 |---|---|---|
 | `administrador` | Administrador (também é superusuário e acessa `/admin/`) | padrão |
-| `gestao` | Gestão (entra no painel) | padrão |
+| `sesmt` | SESMT (entra no painel) | padrão |
 | `carlos` | Massoterapeuta | alto contraste escuro, texto 200%, fala ligada |
 | `andre` | Massoterapeuta | escuro, texto 150% |
 | `marcos` | Massoterapeuta | fala ligada, modo simplificado |
@@ -81,7 +81,7 @@ npm run lighthouse
 ```
 
 - Sobe um servidor próprio na porta 8020 (não atrapalha o da 8010) e roda o Lighthouse em
-  19 páginas: públicas, colaborador, massoterapeuta, administrador e gestão.
+  19 páginas: públicas, colaborador, massoterapeuta, administrador e SESMT.
 - Entra sozinho com as contas de `popular_demo` ([lighthouse/entrar.js](lighthouse/entrar.js)),
   então rode `popular_demo` antes. O massoterapeuta é o `carlos` (alto contraste, texto 200%).
 - **Falha se alguma página ficar abaixo de 100 em acessibilidade.** Desempenho, boas práticas
@@ -109,7 +109,7 @@ apps/notificacoes/
   push.py               envio Web Push e tratamento de falhas
   tarefas.py            lembretes e avisos periódicos (comando `notificacoes`)
 apps/comunicados/       comunicados da empresa e quem já leu
-apps/painel/            indicadores da gestão, CSV e histórico de alterações
+apps/painel/            indicadores do SESMT, CSV e histórico de alterações
 templates/              base.html (skip link, landmarks, regiões aria-live) + componentes/
 static/css/             tokens.css (cores/temas), base.css, componentes.css
 static/js/anunciador.js aria-live + fala (Web Speech API) + vibração + bipe
@@ -123,7 +123,7 @@ static/js/libras.js     carrega o VLibras só quando a pessoa pede
 - **Colaborador**: agenda em 3 passos, faz check-in, avisa a chegada, cancela, entra na lista de espera de dias lotados e lê comunicados para todos.
 - **Massoterapeuta**: vê a agenda do dia ao vivo, marca atendido ou falta, pausa, edita os próprios horários semanais e marca folgas e férias (Meus horários), lê comunicados.
 - **Administrador**: agenda do dia por massoterapeuta, agendar ou encaixar alguém (com opção de exceção às regras), detalhes e histórico de cada agendamento, cadastro de pessoas, regras do benefício, comunicados.
-- **Gestão**: tudo o que o administrador faz, e entra direto no Painel (ocupação, faltas, cancelamentos, usuários únicos, CSV, histórico).
+- **SESMT**: tudo o que o administrador faz, e entra direto no Painel (ocupação, faltas, cancelamentos, usuários únicos, CSV, histórico).
 - **Todos, sem login**: página pública [Como funciona](http://localhost:8010/como-funciona/) e a declaração de acessibilidade.
 
 O admin do Django (`/admin/`) fica só para o superusuário: cadastro de unidades e correções raras.

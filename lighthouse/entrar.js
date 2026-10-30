@@ -14,7 +14,7 @@ const CONTA_POR_CAMINHO = [
   ["/administrador/", "administrador@demo.local"],
   ["/comunicados/gerenciar/", "administrador@demo.local"],
   ["/comunicados/novo/", "administrador@demo.local"],
-  ["/painel/", "gestao@demo.local"],
+  ["/painel/", "sesmt@demo.local"],
   ["/meus-agendamentos/", "ana@demo.local"],
   ["/agendar/", "ana@demo.local"],
   ["/comunicados/", "ana@demo.local"],
