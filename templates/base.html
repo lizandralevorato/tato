@@ -12,13 +12,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#5705CB">
-  <title>{% block titulo %}{% endblock %} | Agenda de Massagem</title>
-  <meta name="description" content="{% block descricao %}Agende sua massagem no trabalho e acompanhe a agenda pelo celular, com leitor de tela, texto ampliado e alto contraste.{% endblock %}">
+  <title>{% block titulo %}{% endblock %} | TATO</title>
+  <meta name="description" content="{% block descricao %}TATO, a agenda que fala: agende sua massagem no trabalho e acompanhe a agenda pelo celular, com leitor de tela, texto ampliado e alto contraste.{% endblock %}">
   <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
   <link rel="icon" href="{% static 'img/icone.svg' %}" type="image/svg+xml">
   <link rel="apple-touch-icon" href="{% static 'img/icone-180.png' %}">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Massagem">
+  <meta name="apple-mobile-web-app-title" content="TATO">
   <meta name="csrf-token" content="{{ csrf_token }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,9 +37,9 @@
   <div class="faixa-marca" aria-hidden="true"></div>
   <header class="cabecalho">
     <div class="cabecalho__interno">
-      <a class="marca" href="{% url 'inicio' %}">
-        <img class="marca__icone" src="{% static 'img/icone.svg' %}" alt="">
-        Agenda de Massagem
+      <a class="marca" href="{% url 'inicio' %}" aria-label="TATO, página inicial">
+        <img class="marca__icone" src="{% static 'img/marca-icone.svg' %}" alt="">
+        <span class="marca__nome" aria-hidden="true">TATO</span>
       </a>
       {% if user.is_authenticated %}
         {% with nome_url=request.resolver_match.view_name %}
@@ -82,9 +82,13 @@
 
   <footer class="rodape">
     <div class="rodape__interno">
-      <p>
-        <a href="{% url 'como_funciona' %}">Como funciona o benefício</a> ·
-        <a href="{% url 'acessibilidade' %}">Acessibilidade deste site</a> ·
+      <div class="rodape__marca">
+        <img src="{% static 'img/icone.svg' %}" alt="">
+        <span>TATO<small>Agenda que fala</small></span>
+      </div>
+      <p class="rodape__links">
+        <a href="{% url 'como_funciona' %}">Como funciona o benefício</a>
+        <a href="{% url 'acessibilidade' %}">Acessibilidade deste site</a>
         <button type="button" class="botao-link" data-abrir-libras hidden>Traduzir para Libras</button>
       </p>
       {% if user.is_authenticated %}<p>Conectado como {{ user.nome }}</p>{% endif %}

@@ -44,6 +44,16 @@
   --foco-halo:        #FFFFFF;
   --destaque-borda:   #8A38FE;
 
+  /* Cabeçalho e faixas de marca (roxo profundo com texto branco: 12:1) */
+  --marca-fundo:      linear-gradient(135deg, #3D0391 0%, #5705CB 60%, #6D1FE0 100%);
+  --marca-texto:      #FFFFFF;
+  --marca-texto-suave:#E8D7FF;
+  --marca-borda:      #C49BFE;
+  --marca-selecao-fundo: #FFFFFF;
+  --marca-selecao-texto: #3D0391;
+  --marca-foco:       #FFFFFF;
+  --marca-foco-halo:  #3D0391;
+
   --sucesso-texto: #004C00;  --sucesso-fundo: #EBFFF5;  --sucesso-borda: #009933;
   --erro-texto:    #9A0040;  --erro-fundo:    #FFF0F5;  --erro-borda:    #CC0055;
   --aviso-texto:   #6B3E00;  --aviso-fundo:   #FFF6E5;  --aviso-borda:   #A35F00;
@@ -55,18 +65,19 @@
   --espaco-5: 1.25rem; --espaco-6: 1.5rem;  --espaco-8: 2rem;    --espaco-12: 3rem;
   --raio-p: 0.375rem;  --raio-m: 0.75rem;   --raio-g: 1rem;      --raio-total: 9999px;
   --alvo-minimo: 3rem; /* 48px: acima dos 44px do WCAG 2.5.5 (AAA) */
-  --largura-conteudo: 48rem;
+  --largura-conteudo: 60rem;
   --altura-linha: 1.6;
   --espaco-letras: normal;
   --espaco-palavras: normal;
   --fonte-base: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --sombra: 0 2px 12px rgb(124 58 237 / 0.07), 0 1px 3px rgb(0 0 0 / 0.04);
+  --sombra: 0 4px 20px rgb(87 5 203 / 0.08), 0 1px 3px rgb(0 0 0 / 0.04);
   --transicao: 180ms cubic-bezier(0.16, 1, 0.3, 1);
   color-scheme: light;
 }
 
 /* Tema escuro (base: dark theme do DT-WBS) */
 html.tema-escuro {
+  --marca-fundo: linear-gradient(135deg, #1F0148 0%, #3D0391 100%);
   --fundo: #2B2B2B; --superficie: #333333; --superficie-alt: #3A3A3A;
   --texto: #E2E2E2; --texto-suave: #C8C8C8; --rotulo: #D9C2FF; --titulo: #E8D7FF;
   --borda: #4A4A4A; --borda-campo: #8C8C8C; --link: #D9C2FF;
@@ -82,6 +93,7 @@ html.tema-escuro {
 }
 @media (prefers-color-scheme: dark) {
   html.tema-sistema {
+    --marca-fundo: linear-gradient(135deg, #1F0148 0%, #3D0391 100%);
     --fundo: #2B2B2B; --superficie: #333333; --superficie-alt: #3A3A3A;
     --texto: #E2E2E2; --texto-suave: #C8C8C8; --rotulo: #D9C2FF; --titulo: #E8D7FF;
     --borda: #4A4A4A; --borda-campo: #8C8C8C; --link: #D9C2FF;
@@ -99,6 +111,9 @@ html.tema-escuro {
 
 /* Alto contraste escuro: amarelo/branco sobre preto */
 html.tema-ac-escuro {
+  --marca-fundo: #000000; --marca-texto: #FFFFFF; --marca-texto-suave: #FFFFFF;
+  --marca-borda: #FFFFFF; --marca-selecao-fundo: #FFD60A; --marca-selecao-texto: #000000;
+  --marca-foco: #FFD60A; --marca-foco-halo: #000000;
   --fundo: #000000; --superficie: #000000; --superficie-alt: #000000;
   --texto: #FFFFFF; --texto-suave: #FFFFFF; --rotulo: #FFD60A; --titulo: #FFD60A;
   --borda: #FFFFFF; --borda-campo: #FFFFFF; --link: #FFD60A;
@@ -115,6 +130,9 @@ html.tema-ac-escuro {
 
 /* Alto contraste claro: preto sobre branco */
 html.tema-ac-claro {
+  --marca-fundo: #FFFFFF; --marca-texto: #000000; --marca-texto-suave: #000000;
+  --marca-borda: #000000; --marca-selecao-fundo: #3D0391; --marca-selecao-texto: #FFFFFF;
+  --marca-foco: #000000; --marca-foco-halo: #FFD60A;
   --fundo: #FFFFFF; --superficie: #FFFFFF; --superficie-alt: #FFFFFF;
   --texto: #000000; --texto-suave: #000000; --rotulo: #000000; --titulo: #3D0391;
   --borda: #000000; --borda-campo: #000000; --link: #3D0391;

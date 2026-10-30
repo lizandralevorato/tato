@@ -6,8 +6,8 @@ from apps.agenda.views import inicio
 from apps.agenda.views.paginas import como_funciona
 from apps.notificacoes.views import service_worker
 
-admin.site.site_header = "Agenda de Massagem: administração"
-admin.site.site_title = "Agenda de Massagem"
+admin.site.site_header = "TATO: administração"
+admin.site.site_title = "TATO"
 admin.site.index_title = "Cadastros"
 
 urlpatterns = [

@@ -1,7 +1,7 @@
 {
-  "name": "Agenda de Massagem",
-  "short_name": "Massagem",
-  "description": "Agendamento acessível de massagem para colaboradores e massoterapeutas.",
+  "name": "TATO: Agenda que fala",
+  "short_name": "TATO",
+  "description": "TATO, a agenda que fala: agendamento acessível de massagem para colaboradores e massoterapeutas.",
   "lang": "pt-BR",
   "start_url": "/",
   "scope": "/",

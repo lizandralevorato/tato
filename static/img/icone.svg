@@ -1,11 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
-  <defs>
-    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0" stop-color="#8A38FE"/>
-      <stop offset="1" stop-color="#5705CB"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="16" fill="url(#g)"/>
-  <path d="M32 14c-6 7-9 13-9 18a9 9 0 0 0 18 0c0-5-3-11-9-18z" fill="#FFFFFF"/>
-  <path d="M14 38c6 0 12 3 18 10 6-7 12-10 18-10-2 8-9 14-18 14s-16-6-18-14z" fill="#E8D7FF"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 768 768">
+  <title>TATO</title>
+  <rect x="26" y="26" width="716" height="716" rx="115" fill="#FFFFFF" stroke="#5F00D2" stroke-width="20"/>
+  <g fill="#D6C4FA">
+    <circle cx="230" cy="191" r="57.5"/>
+    <circle cx="410" cy="575" r="57.5"/>
+  </g>
+  <g fill="#5A00CF">
+    <circle cx="410" cy="191" r="57.5"/>
+    <circle cx="230" cy="383" r="57.5"/>
+    <circle cx="410" cy="383" r="57.5"/>
+    <circle cx="230" cy="575" r="57.5"/>
+  </g>
+  <g fill="none" stroke="#5A00CF" stroke-width="28" stroke-linecap="round">
+    <path d="M517 313A75.4 75.4 0 0 1 517 455"/>
+    <path d="M582 255A171.3 171.3 0 0 1 582 512"/>
+  </g>
 </svg>

@@ -183,3 +183,32 @@ thead th { color: var(--rotulo); background: var(--superficie-alt); }
 dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--espaco-1) var(--espaco-4); }
 dt { font-weight: 700; color: var(--rotulo); }
 dd { margin: 0; }
+
+/* ---- Identidade TATO: hero, cartões e botões mais marcantes ---- */
+.heroi {
+  display: grid; gap: var(--espaco-3); align-content: center;
+  padding: var(--espaco-8) var(--espaco-6);
+  background: var(--marca-fundo); color: var(--marca-texto);
+  border: 2px solid var(--marca-borda); border-radius: var(--raio-g);
+}
+.heroi h1 { color: var(--marca-texto); font-size: 2rem; }
+.heroi__logo { width: 4.5rem; height: 4.5rem; }
+.heroi__selo { font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.875rem; color: var(--marca-texto-suave); }
+.heroi__texto { font-size: 1.125rem; }
+.heroi__lista { list-style: none; padding: 0; display: grid; gap: var(--espaco-2); font-weight: 600; }
+.heroi__lista li::before { content: "✓"; margin-right: var(--espaco-2); font-weight: 700; }
+
+.entrada { display: grid; gap: var(--espaco-6); }
+.entrada__form > * + * { margin-top: var(--espaco-4); }
+@media (min-width: 52rem) {
+  html:not(.modo-simplificado):not(.texto-200):not(.texto-250) .entrada { grid-template-columns: 1.1fr 1fr; align-items: stretch; }
+}
+
+.principal > h1:first-child { padding-bottom: var(--espaco-3); border-bottom: 0.25rem solid var(--destaque-borda); width: fit-content; max-width: 100%; }
+.cartao { border-radius: var(--raio-g); }
+.cartao--destaque { border-left-width: 0.5rem; }
+.botao { border-radius: var(--raio-total); box-shadow: var(--sombra); }
+.botao--grande { border-radius: var(--raio-m); }
+.agenda__item, .lista-dias a, .opcao { border-radius: var(--raio-m); }
+.agenda__item { box-shadow: var(--sombra); }
+.indicador__valor { color: var(--primaria); }

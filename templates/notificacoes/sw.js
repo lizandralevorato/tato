@@ -1,5 +1,5 @@
 {% load static %}/*
- * Service worker da Agenda de Massagem (versão {{ versao }}).
+ * Service worker do TATO (versão {{ versao }}).
  *
  *  - Recebe as notificações (Web Push) e mostra com texto completo, vibração e
  *    botões "Fazer check-in / Não vou" nos lembretes. TalkBack e VoiceOver leem a notificação.
@@ -50,7 +50,7 @@ self.addEventListener("fetch", (evento) => {
 self.addEventListener("push", (evento) => {
   let dados = {};
   try { dados = evento.data ? evento.data.json() : {}; } catch (e) { dados = { corpo: evento.data && evento.data.text() }; }
-  const titulo = dados.titulo || "Agenda de Massagem";
+  const titulo = dados.titulo || "TATO";
 
   evento.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((janelas) => {
