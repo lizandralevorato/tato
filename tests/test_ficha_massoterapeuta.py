@@ -284,23 +284,23 @@ def test_agenda_do_dia_continua_acessivel(client, massoterapeuta, atendimento, f
 # Voz e avisos
 
 
-def test_ouvir_agenda_fala_horario_nome_e_foco_e_nunca_saude(client, massoterapeuta, atendimento, ficha_completa):
-    ag = atendimento(-10, foco_regioes=["ombros", "lombar"], observacao="texto livre privado")
+def test_ouvir_agenda_fala_horario_nome_foco_e_observacao_e_nunca_saude(client, massoterapeuta, atendimento, ficha_completa):
+    ag = atendimento(-10, foco_regioes=["ombros", "lombar"], observacao="quero pouca pressão")
     html = _agenda(client, massoterapeuta)
     falado = re.search(r'data-texto-falado="([^"]*)"', html).group(1)
-    assert f"{formatar_hora(ag.inicio)}, Ana, check-in feito. Foco: ombros e lombar." in falado
+    assert f"{formatar_hora(ag.inicio)}, Ana, check-in feito. Foco: ombros e lombar. Observação: quero pouca pressão." in falado
     assert "Para ouvir a ficha de alguém, use o botão Ver ficha no atendimento." in falado
-    for proibido in ("gestação", "hérnia", "dor", "pressão", "privado", "alerta", "recorrente"):
+    for proibido in ("gestação", "hérnia", "alerta", "recorrente"):
         assert proibido not in falado.lower()
 
 
-def test_estado_json_so_leva_o_foco(client, massoterapeuta, atendimento, ficha_completa):
+def test_estado_json_leva_foco_e_observacao_sem_saude(client, massoterapeuta, atendimento, ficha_completa):
     atendimento(-10, foco_regioes=["ombros"], observacao="texto livre privado")
     entrar(client, massoterapeuta.usuario)
     bruto = client.get(reverse("agenda:estado_json")).content.decode()
     item = client.get(reverse("agenda:estado_json")).json()["itens"][0]
-    assert item["foco"] == "ombros"
-    for proibido in ("privado", "gestacao", "gestação", "hernia"):
+    assert item["foco"] == "ombros" and item["observacao"] == "texto livre privado"
+    for proibido in ("gestacao", "gestação", "hernia"):
         assert proibido not in bruto
 
 
@@ -308,7 +308,7 @@ def test_estado_json_nao_leva_o_foco_de_atendimento_cancelado(client, massoterap
     atendimento(-10, status=Status.CANCELADO, foco_regioes=["ombros"], observacao="cancelada")
     entrar(client, massoterapeuta.usuario)
     [item] = client.get(reverse("agenda:estado_json")).json()["itens"]
-    assert item["status"] == "cancelado" and item["foco"] == ""
+    assert item["status"] == "cancelado" and item["foco"] == "" and item["observacao"] == ""
 
 
 def test_versao_da_agenda_muda_quando_a_ficha_libera_e_quando_o_pedido_muda(massoterapeuta, atendimento, ficha_completa, monkeypatch):

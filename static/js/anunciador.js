@@ -147,18 +147,12 @@
       botao.addEventListener("click", pararFala);
     });
 
-    // Botão "Ativar avisos" (libera áudio com um toque).
-    document.querySelectorAll("[data-ativar-avisos]").forEach(function (botao) {
-      if (!config.fala && !config.som) return;
-      botao.hidden = false;
-      botao.addEventListener("click", function () {
-        liberarAudio();
-        botao.hidden = true;
-        anunciar("Avisos ativados nesta tela.");
-        var titulo = document.querySelector("h1");
-        if (titulo) titulo.focus();
+    // Sem botão: o primeiro toque ou tecla na página já libera som e fala.
+    if (config.fala || config.som) {
+      ["pointerdown", "keydown"].forEach(function (evento) {
+        document.addEventListener(evento, liberarAudio, { once: true });
       });
-    });
+    }
 
     // Mostrar senha (o bloco fica escondido quando não há JavaScript).
     document.querySelectorAll("[data-mostrar-senha]").forEach(function (bloco) {

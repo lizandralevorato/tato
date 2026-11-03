@@ -28,7 +28,11 @@
   }
 
   function textoFoco(item) {
-    return item.foco ? " Foco: " + item.foco + "." : "";
+    var texto = item.foco ? " Foco: " + item.foco + "." : "";
+    if (item.observacao) {
+      texto += " Observação: " + item.observacao + (/[.!?]$/.test(item.observacao) ? "" : ".");
+    }
+    return texto;
   }
 
   function diferencas(antes, itens) {
@@ -42,9 +46,9 @@
         return;
       }
       if (antigo.status === item.status) {
-        // A pessoa mudou o foco da sessão: avisa só o foco, nunca dados de saúde.
-        if (antigo.foco !== item.foco && ["agendado", "confirmado", "chegou"].indexOf(item.status) !== -1) {
-          avisos.push({ texto: item.nome + " mudou o pedido das " + item.hora + "." + (item.foco ? textoFoco(item) : " Sem foco escolhido."), tipo: "info" });
+        // A pessoa mudou o pedido da sessão: avisa foco e observação, nunca dados de saúde.
+        if ((antigo.foco !== item.foco || antigo.observacao !== item.observacao) &&  ["agendado", "confirmado", "chegou"].indexOf(item.status) !== -1) {
+          avisos.push({ texto: item.nome + " mudou o pedido das " + item.hora + "." + (item.foco || item.observacao ? textoFoco(item) : " Sem foco escolhido."), tipo: "info" });
         }
         return;
       }

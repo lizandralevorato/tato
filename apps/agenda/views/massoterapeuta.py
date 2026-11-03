@@ -66,7 +66,7 @@ def _contexto_ao_vivo(massoterapeuta):
 def _texto_agenda_falada(massoterapeuta, contexto):
     """Resumo pensado para ser ouvido (botão "Ouvir agenda de hoje").
 
-    Só horário, nome e foco da sessão. Condições de saúde e dor nunca são faladas aqui:
+    Horário, nome, foco e observação da sessão. Condições de saúde e dor nunca são faladas aqui:
     ficam na ficha aberta por pessoa.
     """
     pendentes = [i for i in contexto["itens"] if i["ag"].status in Agendamento.EM_ABERTO]
@@ -78,6 +78,10 @@ def _texto_agenda_falada(massoterapeuta, contexto):
         frase = f"{formatar_hora(ag.inicio)}, {ag.colaborador.nome}, {ag.get_status_display().lower()}."
         if item["resumo"]["foco"]:
             frase += f" Foco: {item['resumo']['foco']}."
+        if ag.observacao:
+            frase += f" Observação: {ag.observacao}"
+            if frase[-1] not in ".!?":
+                frase += "."
         frases.append(frase)
     frases.append("Para ouvir a ficha de alguém, use o botão Ver ficha no atendimento.")
     return " ".join(frases)
@@ -111,11 +115,12 @@ def _estado(massoterapeuta):
             "inicio": ag.inicio.isoformat(),
             "nome": ag.colaborador.nome,
             "status": ag.status,
-            # Só o foco: o aviso falado nunca diz condições de saúde nem o texto da observação.
+            # Só foco e observação da sessão: o aviso falado nunca diz condições de saúde.
             # Cancelado ou liberado: o pedido não é mais mostrado ao massoterapeuta.
             "foco": ""
             if ag.status in Agendamento.LIBERAM_HORARIO
             else lista_em_frase([nome_curto_regiao(s) for s in ag.foco_regioes or []]),
+            "observacao": "" if ag.status in Agendamento.LIBERAM_HORARIO else ag.observacao,
         }
         for ag in atendimentos
     ]
