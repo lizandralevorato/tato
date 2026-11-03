@@ -15,6 +15,8 @@
   <p><a class="botao botao--grande" href="{% url 'agenda:agendar_dia' %}">Agendar massagem</a></p>
 {% endif %}
 
+{% include "ficha/_sugestoes.html" %}
+
 {% include "notificacoes/_painel.html" with titulo="Lembretes no celular" texto="Receba o lembrete do check-in no celular, com os botões Fazer check-in e Não vou." ocultar_se_ativo=True %}
 
 <section aria-labelledby="titulo-proximos" class="pilha">
@@ -26,6 +28,15 @@
           <h3>{{ item.ag.inicio|dia|capfirst }}, às {{ item.ag.inicio|hora }}</h3>
           <p>Com {{ item.ag.massoterapeuta.nome }} · {{ item.ag.massoterapeuta.duracao_sessao_min }} minutos</p>
           <p>{% status item.ag %}</p>
+
+          {% if item.ag.foco_regioes or item.ag.observacao %}
+            <p><strong>Seu pedido para esta sessão:</strong>
+              {% if item.ag.foco_regioes %}foco em {{ item.ag.foco_regioes|regioes_texto }}.{% endif %}
+              {% if item.ag.observacao %}“{{ item.ag.observacao }}”{% endif %}</p>
+          {% endif %}
+          {% if item.pode_editar_pedido %}
+            <p><a href="{% url 'agenda:pedido' item.ag.pk %}">{% if item.ag.foco_regioes or item.ag.observacao %}Mudar o pedido{% else %}Contar algo para esta sessão{% endif %}<span class="sr-only"> de {{ item.descricao }}</span></a></p>
+          {% endif %}
 
           {% if item.aguardando_checkin %}
             <p class="mensagem mensagem--{% if item.pode_fazer_checkin %}aviso{% else %}info{% endif %}">

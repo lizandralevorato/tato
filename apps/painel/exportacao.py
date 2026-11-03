@@ -156,3 +156,10 @@ def xlsx_resumo(dados):
     planilha.remove(planilha.active)
     _aba(planilha, "Por massoterapeuta", CABECALHO_RESUMO, linhas_resumo(dados))
     return _bytes(planilha)
+
+
+def xlsx_fichas(cabecalho, linhas):
+    planilha = Workbook()
+    planilha.remove(planilha.active)
+    _aba(planilha, "Fichas de saúde", cabecalho, linhas)
+    return _bytes(planilha)

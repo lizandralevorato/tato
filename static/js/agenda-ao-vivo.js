@@ -27,17 +27,27 @@
     return mapa;
   }
 
+  function textoFoco(item) {
+    return item.foco ? " Foco: " + item.foco + "." : "";
+  }
+
   function diferencas(antes, itens) {
     var avisos = [];
     itens.forEach(function (item) {
       var antigo = antes[item.id];
       if (!antigo) {
         if (item.status !== "cancelado" && item.status !== "expirado") {
-          avisos.push({ texto: "Novo agendamento: " + item.hora + ", " + item.nome + ".", tipo: "info" });
+          avisos.push({ texto: "Novo agendamento: " + item.hora + ", " + item.nome + "." + textoFoco(item), tipo: "info" });
         }
         return;
       }
-      if (antigo.status === item.status) return;
+      if (antigo.status === item.status) {
+        // A pessoa mudou o foco da sessão: avisa só o foco, nunca dados de saúde.
+        if (antigo.foco !== item.foco && ["agendado", "confirmado", "chegou"].indexOf(item.status) !== -1) {
+          avisos.push({ texto: item.nome + " mudou o pedido das " + item.hora + "." + (item.foco ? textoFoco(item) : " Sem foco escolhido."), tipo: "info" });
+        }
+        return;
+      }
       if (item.status === "chegou") {
         avisos.push({ texto: item.nome + " chegou. Atendimento das " + item.hora + ".", tipo: "chegada", urgente: true });
       } else if (item.status === "cancelado") {
@@ -83,6 +93,13 @@
         }
       });
   }
+
+  // Voltando da ficha de um atendimento (#atendimento-123): foco no mesmo atendimento da lista.
+  function focarAtendimentoDoEndereco() {
+    var alvo = /^#atendimento-\d+$/.test(window.location.hash) ? document.getElementById(window.location.hash.slice(1)) : null;
+    if (alvo) alvo.focus();
+  }
+  focarAtendimentoDoEndereco();
 
   function verificar() {
     fetch(container.dataset.urlEstado, { credentials: "same-origin", headers: { Accept: "application/json" } })

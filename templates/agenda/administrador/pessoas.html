@@ -27,7 +27,7 @@
     <table>
       <caption id="cap-pessoas">Pessoas cadastradas</caption>
       <thead>
-        <tr><th scope="col">Nome</th><th scope="col">E-mail</th><th scope="col">Papel</th><th scope="col">Acesso</th><th scope="col">Ações</th></tr>
+        <tr><th scope="col">Nome</th><th scope="col">E-mail</th><th scope="col">Papel</th><th scope="col">Acesso</th><th scope="col">Ficha de saúde</th><th scope="col">Ações</th></tr>
       </thead>
       <tbody>
         {% for p in pessoas %}
@@ -36,6 +36,7 @@
             <td>{{ p.email }}</td>
             <td>{{ p.get_papel_display }}</td>
             <td>{% if p.is_active %}Ativo{% else %}Desativado{% endif %}</td>
+            <td>{{ p.ficha_situacao }}</td>
             <td>{% if not p.is_superuser or user.is_superuser %}<a href="{% url 'agenda:pessoa' p.pk %}">Editar<span class="sr-only"> {{ p.nome }}</span></a>{% endif %}</td>
           </tr>
         {% endfor %}

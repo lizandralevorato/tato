@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Saúde e foco: {{ de|date:"d/m/Y" }} a {{ ate|date:"d/m/Y" }}{% endblock %}
+{% block conteudo %}
+<p><a href="{% url 'painel:inicio' %}?{{ consulta }}">Voltar para o painel</a></p>
+<h1>Saúde e foco</h1>
+<p class="introducao">
+  Onde as pessoas sentem desconforto e o que pedem nas massagens, de {{ de|date:"j \d\e F"|lower }} a {{ ate|date:"j \d\e F \d\e Y"|lower }}{% if unidade %}, {{ unidade.nome }}{% endif %}.
+</p>
+<p class="mensagem mensagem--info"><span class="mensagem__icone" aria-hidden="true">i</span>
+  <span>São dados sensíveis de saúde (LGPD). Cada ficha aberta e cada planilha baixada fica registrada em <a href="{% url 'painel:saude_acessos' %}?{{ consulta }}">Registro de acessos</a>. Região recorrente é um sinal de atenção, não um diagnóstico.</span></p>
+
+{% include "painel/_filtros.html" %}
+
+{% if not dados %}
+  <p>Nenhuma unidade cadastrada.</p>
+{% else %}
+<section aria-labelledby="titulo-numeros">
+  <h2 id="titulo-numeros">Fichas</h2>
+  <ul class="indicadores">
+    <li class="cartao"><span class="indicador__valor">{{ dados.preenchidas }}</span> <span class="indicador__rotulo">ficha{{ dados.preenchidas|pluralize }} preenchida{{ dados.preenchidas|pluralize }} (de {{ dados.pessoas }} pessoa{{ dados.pessoas|pluralize }} na unidade)</span></li>
+    <li class="cartao"><span class="indicador__valor">{{ dados.desatualizadas }}</span> <span class="indicador__rotulo">desatualizada{{ dados.desatualizadas|pluralize }}{% if dados.dias_desatualizada %} (sem mudança há mais de {{ dados.dias_desatualizada }} dias){% endif %}</span></li>
+    <li class="cartao"><span class="indicador__valor">{{ dados.atualizadas_no_periodo }}</span> <span class="indicador__rotulo">criada{{ dados.atualizadas_no_periodo|pluralize }} ou atualizada{{ dados.atualizadas_no_periodo|pluralize }} no período</span></li>
+    <li class="cartao"><span class="indicador__valor">{{ dados.total_recorrentes }}</span> <span class="indicador__rotulo">pessoa{{ dados.total_recorrentes|pluralize }} com região recorrente</span></li>
+  </ul>
+  <p class="ajuda">Os números das fichas são os de hoje. O período vale para os pedidos de foco e para as fichas criadas ou atualizadas. <a href="{% url 'painel:saude_fichas' %}?{{ consulta }}">Ver as fichas, uma por uma</a>.</p>
+</section>
+
+<section aria-labelledby="titulo-regioes" class="pilha">
+  <h2 id="titulo-regioes">Regiões mais citadas</h2>
+  <p>{{ texto_ranking }}</p>
+  <div class="tabela-rolavel" role="region" aria-labelledby="cap-regioes" tabindex="0">
+    <table>
+      <caption id="cap-regioes">Ranking de regiões: fichas e pedidos de foco no período</caption>
+      <thead>
+        <tr>
+          <th scope="col">Região</th><th scope="col">Pessoas com dor na ficha</th>
+          <th scope="col">Dor forte</th><th scope="col">Frequente ou sempre</th>
+          <th scope="col">Pedidos de foco no período</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for linha in dados.ranking %}
+          <tr>
+            <th scope="row">{{ linha.nome }}</th>
+            <td>
+              <span class="barra-valor">
+                <span class="barra" aria-hidden="true"><span style="width: {% widthratio linha.fichas dados.maior_ranking 100 %}%"></span></span>
+                {{ linha.fichas }}
+              </span>
+            </td>
+            <td>{{ linha.fortes }}</td><td>{{ linha.frequentes }}</td><td>{{ linha.focos }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="ajuda">A barra é só um apoio visual. Os números da tabela são os mesmos.</p>
+</section>
+
+<section aria-labelledby="titulo-condicoes" class="pilha">
+  <h2 id="titulo-condicoes">Condições de saúde mais frequentes</h2>
+  <div class="tabela-rolavel" role="region" aria-labelledby="cap-condicoes" tabindex="0">
+    <table>
+      <caption id="cap-condicoes">Condições informadas nas fichas, da mais para a menos frequente</caption>
+      <thead><tr><th scope="col">Condição</th><th scope="col">Pessoas</th></tr></thead>
+      <tbody>
+        {% for linha in dados.condicoes %}<tr><th scope="row">{{ linha.nome }}</th><td>{{ linha.pessoas }}</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="titulo-recorrentes" class="pilha">
+  <h2 id="titulo-recorrentes">Pessoas com região recorrente</h2>
+  {% if dados.recorrentes %}
+    <div class="tabela-rolavel" role="region" aria-labelledby="cap-recorrentes" tabindex="0">
+      <table>
+        <caption id="cap-recorrentes">Quem pediu foco na mesma região várias vezes na janela das Regras</caption>
+        <thead><tr><th scope="col">Pessoa</th><th scope="col">Sinal</th><th scope="col">Ficha</th></tr></thead>
+        <tbody>
+          {% for linha in dados.recorrentes %}
+            <tr>
+              <th scope="row">{{ linha.pessoa.nome }}</th>
+              <td>{% for r in linha.itens %}{{ r.texto }}{% if not forloop.last %}; {% endif %}{% endfor %}</td>
+              <td><a href="{% url 'painel:saude_pessoa' linha.pessoa.pk %}">Abrir<span class="sr-only"> a ficha de {{ linha.pessoa.nome }}</span></a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p>Ninguém atingiu o limite de regiões recorrentes.</p>
+  {% endif %}
+</section>
+
+<section aria-labelledby="titulo-baixar" class="cartao">
+  <h2 id="titulo-baixar">Planilha agregada</h2>
+  <p>Contagens por região e condição, sem nome de ninguém. Grupos com menos de 3 pessoas aparecem como “menos de 3”. O download fica registrado.</p>
+  <p><a href="{% url 'painel:saude_csv' %}?{{ consulta }}">Baixar em CSV</a></p>
+</section>
+{% endif %}
+{% endblock %}

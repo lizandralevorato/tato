@@ -7,6 +7,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from apps.ficha import servicos as ficha_servicos
+from apps.ficha.vocabulario import lista_em_frase, nome_curto_regiao
+
 from .. import servicos
 from ..forms import AusenciaForm, PeriodoForm
 from ..formatacao import dia as formatar_dia
@@ -28,11 +31,14 @@ def _contexto_ao_vivo(massoterapeuta):
     servicos.liberar_reservas_sem_checkin()
     agora = timezone.now()
     proximo = servicos.proximo_atendimento(massoterapeuta, agora)
+    atendimentos = list(servicos.agenda_do_dia(massoterapeuta, timezone.localdate()))
+    resumos = ficha_servicos.resumos_da_agenda(atendimentos, massoterapeuta.unidade, agora)
     itens = []
-    for ag in servicos.agenda_do_dia(massoterapeuta, timezone.localdate()):
+    for ag in atendimentos:
         itens.append(
             {
                 "ag": ag,
+                "resumo": resumos[ag.pk],
                 "pode_atender": ag.status in Agendamento.EM_ABERTO and agora >= ag.inicio,
                 "falta_a_partir": servicos.pode_marcar_falta_a_partir(ag),
                 "pode_faltar": ag.status in Agendamento.PENDENTES and agora >= servicos.pode_marcar_falta_a_partir(ag),
@@ -43,6 +49,7 @@ def _contexto_ao_vivo(massoterapeuta):
     pendentes = [i for i in itens if i["ag"].status in Agendamento.EM_ABERTO]
     return {
         "proximo": proximo,
+        "proximo_resumo": resumos.get(proximo.pk) if proximo else None,
         "proximo_falta_a_partir": servicos.pode_marcar_falta_a_partir(proximo) if proximo else None,
         "proximo_pode_faltar": bool(
             proximo
@@ -57,13 +64,22 @@ def _contexto_ao_vivo(massoterapeuta):
 
 
 def _texto_agenda_falada(massoterapeuta, contexto):
-    """Resumo pensado para ser ouvido (botão "Ouvir agenda de hoje")."""
-    pendentes = [i["ag"] for i in contexto["itens"] if i["ag"].status in Agendamento.EM_ABERTO]
+    """Resumo pensado para ser ouvido (botão "Ouvir agenda de hoje").
+
+    Só horário, nome e foco da sessão. Condições de saúde e dor nunca são faladas aqui:
+    ficam na ficha aberta por pessoa.
+    """
+    pendentes = [i for i in contexto["itens"] if i["ag"].status in Agendamento.EM_ABERTO]
     if not pendentes:
         return "Você não tem mais atendimentos marcados para hoje."
     frases = [f"Você tem {len(pendentes)} atendimento{'s' if len(pendentes) > 1 else ''} pela frente hoje."]
-    for ag in pendentes:
-        frases.append(f"{formatar_hora(ag.inicio)}, {ag.colaborador.nome}, {ag.get_status_display().lower()}.")
+    for item in pendentes:
+        ag = item["ag"]
+        frase = f"{formatar_hora(ag.inicio)}, {ag.colaborador.nome}, {ag.get_status_display().lower()}."
+        if item["resumo"]["foco"]:
+            frase += f" Foco: {item['resumo']['foco']}."
+        frases.append(frase)
+    frases.append("Para ouvir a ficha de alguém, use o botão Ver ficha no atendimento.")
     return " ".join(frases)
 
 
@@ -86,6 +102,8 @@ def agora_parcial(request):
 
 
 def _estado(massoterapeuta):
+    agora = timezone.now()
+    atendimentos = list(servicos.agenda_do_dia(massoterapeuta, timezone.localdate(), incluir_cancelados=True))
     itens = [
         {
             "id": ag.pk,
@@ -93,10 +111,20 @@ def _estado(massoterapeuta):
             "inicio": ag.inicio.isoformat(),
             "nome": ag.colaborador.nome,
             "status": ag.status,
+            # Só o foco: o aviso falado nunca diz condições de saúde nem o texto da observação.
+            # Cancelado ou liberado: o pedido não é mais mostrado ao massoterapeuta.
+            "foco": ""
+            if ag.status in Agendamento.LIBERAM_HORARIO
+            else lista_em_frase([nome_curto_regiao(s) for s in ag.foco_regioes or []]),
         }
-        for ag in servicos.agenda_do_dia(massoterapeuta, timezone.localdate(), incluir_cancelados=True)
+        for ag in atendimentos
     ]
-    assinatura = "|".join(f"{i['id']}:{i['status']}" for i in itens)
+    # A versão muda também quando o pedido é editado e quando a janela da ficha abre ou fecha,
+    # para a lista aparecer atualizada (com ou sem o botão Ver ficha).
+    assinatura = "|".join(
+        f"{i['id']}:{i['status']}:{i['foco']}:{ag.observacao_em or ''}:{ficha_servicos.na_janela_de_acesso(ag, agora)}"
+        for i, ag in zip(itens, atendimentos)
+    )
     return {"versao": hashlib.sha1(assinatura.encode()).hexdigest()[:12], "itens": itens}
 
 

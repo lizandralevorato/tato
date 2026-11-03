@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block titulo %}Apagar minha ficha{% endblock %}
+{% block conteudo %}
+<h1>Apagar minha ficha de saúde?</h1>
+<p class="introducao">Vamos apagar tudo o que você preencheu e o histórico de versões. Isso não pode ser desfeito.</p>
+<p>O massoterapeuta e o SESMT deixam de ver essas informações. Fica só o registro de que a ficha foi apagada e quando, sem nenhum dado de saúde.</p>
+
+<form method="post" class="pilha">
+  {% csrf_token %}
+  <div class="campo">
+    <label class="opcao opcao--verificacao" for="apagar_observacoes">
+      <input type="checkbox" name="apagar_observacoes" id="apagar_observacoes">
+      <span class="opcao__texto">Apagar também o que escrevi nas minhas massagens anteriores e futuras
+        <span class="opcao__detalhe">Apaga o foco e a observação de cada agendamento. Os agendamentos continuam.</span></span>
+    </label>
+  </div>
+  <div class="acoes">
+    <button type="submit" class="botao botao--perigo botao--grande">Sim, apagar minha ficha</button>
+    <a class="botao botao--secundario botao--grande" href="{% url 'ficha:minha' %}">Não, voltar para a ficha</a>
+  </div>
+</form>
+{% endblock %}

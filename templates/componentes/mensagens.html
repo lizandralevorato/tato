@@ -1,6 +1,7 @@
 {% if messages %}
   {# Recebe o foco ao carregar: o leitor de tela lê a mensagem antes do resto da página. #}
-  <div class="mensagens" tabindex="-1" data-focar-ao-carregar role="region" aria-label="Mensagens">
+  {# Páginas que movem o foco para o próprio título (foco_no_titulo) anunciam a mensagem pela região aria-live. #}
+  <div class="mensagens" tabindex="-1" {% if not foco_no_titulo %}data-focar-ao-carregar {% endif %}role="region" aria-label="Mensagens">
     {% for mensagem in messages %}
       <p class="mensagem mensagem--{{ mensagem.tags }}" data-mensagem>
         <span class="mensagem__icone" aria-hidden="true">{% if mensagem.tags == "sucesso" %}✔{% elif mensagem.tags == "erro" %}✖{% elif mensagem.tags == "aviso" %}!{% else %}i{% endif %}</span>

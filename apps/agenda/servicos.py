@@ -12,6 +12,7 @@ from django.db.models import Count, Q
 from django.utils import timezone
 
 from apps.contas.models import Usuario
+from apps.ficha.vocabulario import Regiao
 from apps.notificacoes import avisos
 
 from .formatacao import dia as formatar_dia
@@ -262,6 +263,53 @@ def validar_agendamento(
         )
 
 
+# Pedido para a sessão (foco e observação opcionais)
+
+OBSERVACAO_MAX = 300
+
+
+def validar_pedido(foco_regioes, observacao):
+    """Devolve (foco sem repetição na ordem do vocabulário, observação sem espaços nas pontas)."""
+    foco = set(foco_regioes or [])
+    invalidas = foco - set(Regiao.values)
+    if invalidas:
+        raise RegraViolada("Escolha o foco da sessão só entre as regiões da lista.")
+    observacao = (observacao or "").strip()
+    if len(observacao) > OBSERVACAO_MAX:
+        raise RegraViolada(f"A observação pode ter até {OBSERVACAO_MAX} caracteres.")
+    return [r.value for r in Regiao if r.value in foco], observacao
+
+
+def editavel_ate(agendamento):
+    """O pedido pode ser mudado até o check-in abrir."""
+    return janela_checkin(agendamento)[0]
+
+
+def pode_editar_observacao(agendamento, agora=None) -> bool:
+    agora = agora or timezone.now()
+    return agendamento.status in Agendamento.PENDENTES and agora < editavel_ate(agendamento)
+
+
+def atualizar_pedido(agendamento, foco_regioes, observacao, por, agora=None):
+    """Muda o foco e a observação. Só quem agendou, e só até o check-in abrir."""
+    agora = agora or timezone.now()
+    if por.pk != agendamento.colaborador_id:
+        raise RegraViolada("Só quem agendou pode mudar o pedido para a sessão.")
+    foco_regioes, observacao = validar_pedido(foco_regioes, observacao)
+    if not pode_editar_observacao(agendamento, agora):
+        if agendamento.status not in Agendamento.PENDENTES:
+            raise RegraViolada("Este agendamento não aceita mais mudanças no pedido.")
+        raise RegraViolada(
+            f"O pedido para a sessão só pode ser mudado até o check-in abrir ({_quando(editavel_ate(agendamento), agora)})."
+        )
+    agendamento.foco_regioes = foco_regioes
+    agendamento.observacao = observacao
+    agendamento.observacao_em = agora
+    agendamento.save(update_fields=["foco_regioes", "observacao", "observacao_em", "atualizado_em"])
+    registrar(agendamento, Acao.PEDIDO, por, agora=agora)
+    return agendamento
+
+
 def escolher_massoterapeuta(unidade, inicio: datetime, agora=None):
     """Quando o colaborador não tem preferência: quem tem menos atendimentos no dia."""
     dia = timezone.localtime(inicio).date()
@@ -283,9 +331,16 @@ def escolher_massoterapeuta(unidade, inicio: datetime, agora=None):
     return min(livres, key=lambda m: (carga.get(m.pk, 0), m.nome))
 
 
-def agendar(colaborador, massoterapeuta, inicio: datetime, agora=None, por=None, encaixe=False, excecao=False):
-    """Cria o agendamento. `por` é quem agendou, quando não foi a própria pessoa (administrador)."""
+def agendar(
+    colaborador, massoterapeuta, inicio: datetime, agora=None, por=None, encaixe=False, excecao=False,
+    foco_regioes=None, observacao="",
+):
+    """Cria o agendamento. `por` é quem agendou, quando não foi a própria pessoa (administrador).
+
+    `foco_regioes` e `observacao` são o pedido opcional para esta sessão.
+    """
     agora = agora or timezone.now()
+    foco_regioes, observacao = validar_pedido(foco_regioes, observacao)
     pela_equipe = por is not None and por.pk != colaborador.pk
     if encaixe:
         origem, acao = Agendamento.Origem.ENCAIXE, Acao.ENCAIXE
@@ -307,6 +362,9 @@ def agendar(colaborador, massoterapeuta, inicio: datetime, agora=None, por=None,
                     inicio=inicio,
                     fim=inicio + timedelta(minutes=massoterapeuta.duracao_sessao_min),
                     origem=origem,
+                    foco_regioes=foco_regioes,
+                    observacao=observacao,
+                    observacao_em=agora if (foco_regioes or observacao) else None,
                 )
         except IntegrityError:
             raise RegraViolada("Esse horário acabou de ser reservado por outra pessoa. Escolha outro.")

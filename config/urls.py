@@ -22,6 +22,7 @@ urlpatterns = [
     path("como-funciona/", como_funciona, name="como_funciona"),
     path("", include("apps.contas.urls")),
     path("", include("apps.agenda.urls")),
+    path("", include("apps.ficha.urls")),
     path("", include("apps.notificacoes.urls")),
     path("", include("apps.comunicados.urls")),
     path("", include("apps.painel.urls")),

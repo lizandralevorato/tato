@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Fichas de saúde{% endblock %}
+{% block conteudo %}
+<p><a href="{% url 'painel:saude' %}?{{ consulta }}">Voltar para Saúde e foco</a></p>
+<h1>Fichas de saúde</h1>
+<p class="introducao">Cada ficha aberta fica registrada com o seu nome e o horário.</p>
+
+<form method="get" class="cartao" role="search" aria-label="Procurar fichas">
+  {% if unidade %}<input type="hidden" name="unidade" value="{{ unidade.pk }}">{% endif %}
+  <div class="campo">
+    <label for="busca">Nome ou e-mail</label>
+    <input type="text" id="busca" name="q" value="{{ busca }}" autocomplete="off">
+  </div>
+  <div class="acoes"><button type="submit" class="botao botao--secundario">Procurar</button></div>
+</form>
+
+<p role="status">{{ linhas|length }} ficha{{ linhas|length|pluralize }} com autorização.</p>
+{% if sem_autorizacao %}
+  <p class="texto-suave">{{ sem_autorizacao }} pessoa{{ sem_autorizacao|pluralize }} preencheu a ficha e não autorizou o SESMT a ver com o nome. Os dados entram só nas contagens do grupo.</p>
+{% endif %}
+<p><a href="{% url 'painel:saude_xlsx' %}?{{ consulta }}">Baixar as fichas em Excel (XLSX)</a></p>
+
+{% if linhas %}
+  <div class="tabela-rolavel" role="region" aria-labelledby="cap-fichas" tabindex="0">
+    <table>
+      <caption id="cap-fichas">Fichas preenchidas na unidade</caption>
+      <thead><tr><th scope="col">Pessoa</th><th scope="col">Última atualização</th><th scope="col">Situação</th><th scope="col">Sinais</th><th scope="col">Ficha</th></tr></thead>
+      <tbody>
+        {% for linha in linhas %}
+          <tr>
+            <th scope="row">{{ linha.ficha.usuario.nome }}</th>
+            <td>{{ linha.ficha.atualizada_em|date:"d/m/Y" }}</td>
+            <td>{% if linha.desatualizada %}Desatualizada{% else %}Atualizada{% endif %}</td>
+            <td>{% for texto in linha.recorrentes %}{{ texto }}{% if not forloop.last %}; {% endif %}{% empty %}Nenhum{% endfor %}</td>
+            <td><a href="{% url 'painel:saude_pessoa' linha.ficha.usuario_id %}">Abrir<span class="sr-only"> a ficha de {{ linha.ficha.usuario.nome }}</span></a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+{% endblock %}

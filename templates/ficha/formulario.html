@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block titulo %}Minha ficha de saúde{% endblock %}
+{% block conteudo %}
+<h1 id="titulo-ficha" tabindex="-1"{% if salva %} data-focar-ao-carregar data-anunciar-ao-carregar="Ficha salva. Você pode mudar quando quiser."{% endif %}>Minha ficha de saúde</h1>
+<p class="introducao">
+  Assim o massoterapeuta sabe onde focar e o que evitar. <strong>Preencha só o que quiser. Você pode mudar quando quiser.</strong>
+</p>
+<p>{{ nao_e_diagnostico }}</p>
+
+{% if ficha %}
+  <p class="texto-suave">Última atualização: {{ ficha.atualizada_em|date:"d/m/Y \à\s H:i" }}.
+    <a href="{% url 'ficha:meus_acessos' %}">Ver quem abriu a minha ficha</a>.</p>
+{% endif %}
+{% if adicionando and not salva %}
+  <p class="mensagem mensagem--info"><span class="mensagem__icone" aria-hidden="true">i</span>
+    <span>Já deixamos marcada a região que você pediu para incluir. Confira e salve no fim.</span></p>
+{% endif %}
+
+{% include "componentes/resumo_erros.html" %}
+
+<form method="post" class="pilha etapas" novalidate data-ficha-etapas>
+  {% csrf_token %}
+  <input type="hidden" name="proximo" value="{{ proximo }}">
+
+  <section class="cartao" data-etapa aria-labelledby="etapa-1">
+    <h2 id="etapa-1" tabindex="-1">Etapa 1 de 3: onde dói</h2>
+    <fieldset>
+      <legend>{{ form.regioes.label }}</legend>
+      <p class="ajuda" id="ajuda-regioes">Marque quantas quiser. Para cada uma, se quiser, diga a intensidade e a frequência. Se não sente nada, deixe em branco.</p>
+      <div class="regioes" aria-describedby="ajuda-regioes">
+        {% for linha in form.linhas_regioes %}
+          <div class="regiao" data-regiao>
+            <label class="opcao" for="{{ linha.marca.id_for_label }}">
+              {{ linha.marca.tag }}
+              <span class="opcao__texto">{{ linha.marca.choice_label }}</span>
+            </label>
+            <div class="regiao__detalhes" id="detalhes-{{ linha.slug }}" data-regiao-detalhes>
+              {% include "componentes/campo.html" with campo=linha.intensidade %}
+              {% include "componentes/campo.html" with campo=linha.frequencia %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </fieldset>
+  </section>
+
+  <section class="cartao" data-etapa aria-labelledby="etapa-2">
+    <h2 id="etapa-2" tabindex="-1">Etapa 2 de 3: sua saúde</h2>
+    {% include "componentes/grupo_opcoes.html" with campo=form.condicoes %}
+    {% include "componentes/campo.html" with campo=form.condicao_outra %}
+    {% include "componentes/grupo_opcoes.html" with campo=form.dor_cronica grade=True %}
+    {% include "componentes/campo.html" with campo=form.dor_cronica_descricao %}
+    {% include "componentes/grupo_opcoes.html" with campo=form.problema_coluna grade=True %}
+    {% include "componentes/campo.html" with campo=form.problema_coluna_descricao %}
+  </section>
+
+  <section class="cartao" data-etapa aria-labelledby="etapa-3">
+    <h2 id="etapa-3" tabindex="-1">Etapa 3 de 3: preferências e confirmar</h2>
+    {% include "componentes/grupo_opcoes.html" with campo=form.pressao grade=True %}
+    {% include "componentes/campo.html" with campo=form.evitar %}
+    {% include "componentes/campo.html" with campo=form.observacoes %}
+
+    <section class="aviso-privacidade" aria-labelledby="titulo-privacidade">
+      <h3 id="titulo-privacidade">Aviso de privacidade</h3>
+      <dl class="aviso-privacidade__lista">
+        {% for titulo, texto in aviso %}
+          <dt>{{ titulo }}</dt><dd>{{ texto }}</dd>
+        {% endfor %}
+      </dl>
+      <p><a href="{% url 'ficha:privacidade' %}">Abrir o aviso de privacidade em uma página só</a></p>
+    </section>
+
+    {% if exige_consentimento %}
+      <div class="campo">
+        {% if form.consentimento.errors %}<p class="erro-campo" id="{{ form.consentimento.auto_id }}-erro"><span aria-hidden="true">✖ </span>{{ form.consentimento.errors|join:" " }}</p>{% endif %}
+        <label class="opcao opcao--verificacao" for="{{ form.consentimento.id_for_label }}">
+          <input type="checkbox" name="consentimento" id="{{ form.consentimento.id_for_label }}"{% if form.consentimento.value %} checked{% endif %}{% if form.consentimento.errors %} aria-invalid="true" aria-describedby="{{ form.consentimento.auto_id }}-erro"{% endif %}>
+          <span class="opcao__texto">{{ form.consentimento.label }}</span>
+        </label>
+      </div>
+    {% else %}
+      <p class="mensagem mensagem--info"><span class="mensagem__icone" aria-hidden="true">i</span>
+        <span>Você aceitou o aviso de privacidade em {{ ficha.consentimento_em|date:"d/m/Y" }}.</span></p>
+    {% endif %}
+
+    <div class="campo">
+      <label class="opcao opcao--verificacao" for="{{ form.autoriza_sesmt.id_for_label }}">
+        <input type="checkbox" name="autoriza_sesmt" id="{{ form.autoriza_sesmt.id_for_label }}"{% if form.autoriza_sesmt.value %} checked{% endif %}>
+        <span class="opcao__texto">{{ form.autoriza_sesmt.label }}</span>
+      </label>
+    </div>
+  </section>
+
+  <div class="acoes" data-etapas-controles hidden>
+    <button type="button" class="botao botao--secundario" data-etapa-voltar>Voltar</button>
+    <button type="button" class="botao" data-etapa-proxima>Próxima etapa</button>
+  </div>
+  <div class="acoes" data-etapas-enviar>
+    <button type="submit" class="botao botao--grande">Salvar minha ficha</button>
+  </div>
+</form>
+
+{% if ficha %}
+  <p><a class="botao botao--perigo" href="{% url 'ficha:apagar' %}">Apagar minha ficha</a></p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% load static %}
+<script src="{% static 'js/ficha-etapas.js' %}" defer></script>
+{% endblock %}

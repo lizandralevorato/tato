@@ -88,5 +88,13 @@
   </ul>
   <p><a href="{% url 'painel:historico' %}?{{ consulta }}">Ver o histórico de alterações do período</a></p>
 </section>
+
+{% if user.papel == "sesmt" %}
+<section aria-labelledby="titulo-saude" class="cartao">
+  <h2 id="titulo-saude">Saúde e foco</h2>
+  <p>Regiões com mais desconforto, condições mais citadas, fichas preenchidas e desatualizadas e pessoas com região recorrente. São dados sensíveis, e cada acesso fica registrado.</p>
+  <p><a class="botao" href="{% url 'painel:saude' %}?{{ consulta }}">Abrir Saúde e foco</a></p>
+</section>
+{% endif %}
 {% endif %}
 {% endblock %}

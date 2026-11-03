@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Quem abriu minha ficha{% endblock %}
+{% block conteudo %}
+<p><a href="{% url 'ficha:minha' %}">Voltar para a minha ficha</a></p>
+<h1>Quem abriu minha ficha</h1>
+<p class="introducao">Cada vez que alguém abre a sua ficha, o acesso fica registrado aqui.</p>
+{% if acessos %}
+  <ol class="lista-simples">
+    {% for a in acessos %}
+      <li class="cartao"><strong>{{ a.em|dia|capfirst }}, {{ a.em|hora }}</strong>: {{ a.usuario_nome }}. {{ a.get_finalidade_display }}.</li>
+    {% endfor %}
+  </ol>
+{% else %}
+  <p>Ninguém abriu a sua ficha até agora.</p>
+{% endif %}
+{% endblock %}

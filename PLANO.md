@@ -30,6 +30,7 @@ Substituir a planilha da Silvana + Teams por um site onde:
 | 10 | Conflito de horário | Restrição única no banco + check-in | 1 e 2 |
 | 4 | Colaboradores não conhecem o benefício | Página pública "Como funciona" + link fácil de divulgar | 4 |
 | 9 | Isolamento do massoterapeuta | Área de avisos/comunicados da empresa dentro do app | 4 |
+| 11 | Massoterapeuta atende "às cegas" | Ficha de saúde opcional do colaborador, pedido de foco em cada massagem e aviso de região recorrente | 5 |
 
 ---
 
@@ -302,7 +303,7 @@ Métricas de sucesso (ligadas ao discovery): massoterapeuta completa "saber o pr
 5. **Política do benefício** (tolerância 5 min, cancelamento 15 min, falta conta no limite): aprovada pelo RH?
 6. **Celulares dos massoterapeutas**: quais modelos/sistemas (Android × iPhone)? Define prioridades de teste e se vibração funciona.
 7. **Canal extra de lembrete**: só push, ou também e-mail/Teams/Google Chat?
-8. **LGPD**: dados de saúde/deficiência no perfil → guardar só as preferências de interface (não o diagnóstico), com consentimento.
+8. ~~**LGPD**~~: decidido em 30/10/2026. Continuamos sem guardar diagnóstico nas preferências de interface. A **ficha de saúde** (opcional) é guardada à parte, com consentimento explícito e versionado; só o SESMT e o massoterapeuta do atendimento (2 h antes a 1 h depois) a veem, e o administrador não. Ver seção 10.
 
 ---
 
@@ -379,3 +380,26 @@ Feito:
 - Comunicados da empresa para massoterapeutas ou para todos, com aviso opcional no celular e marcação de "novo".
 - `psycopg[binary]` adicionado para usar PostgreSQL.
 
+
+**30/10/2026: ficha de saúde, pedido da sessão e região recorrente**
+
+Problema: ninguém sabia onde o colaborador sente dor ou se tem alguma condição de saúde, e o massoterapeuta atendia "às cegas".
+
+Feito:
+- **Ficha de saúde** (app `apps/ficha/`), opcional e editável: regiões com dor (intensidade e frequência), condições, dor crônica, coluna, pressão, o que evitar, observações. Formulário em 3 etapas (listas, caixas e botões de opção nativos; sem mapa do corpo em imagem), que funciona sem JavaScript. Consentimento explícito com data e versão do texto. Cada salvamento grava uma versão imutável. Apagar a ficha apaga as versões.
+- **Pedido para cada massagem**: foco por regiões e até 300 caracteres no passo 3 da reserva e nos encaixes do administrador. Editável até o check-in abrir.
+- **Região recorrente**: o sistema conta os focos por pessoa (padrão 3 vezes em 30 dias, configurável em Regras). Avisa o massoterapeuta e o SESMT e sugere à pessoa incluir na ficha. A ficha nunca muda sozinha, e "Agora não" silencia por 30 dias.
+- **Massoterapeuta**: a lista do dia mostra o foco, o pedido e a região recorrente, sem conteúdo da ficha. A ficha abre uma pessoa por vez, em página própria, de 2 h antes até 1 h depois do atendimento, com registro de acesso e botão "Ouvir ficha" (lê o mesmo texto da tela, com pausar, continuar e repetir).
+- **SESMT**: seção "Saúde e foco" no Painel (ranking de regiões em tabela, condições, fichas preenchidas e desatualizadas, regiões recorrentes), ficha individual com histórico e linha do tempo, registro de acessos e planilha agregada (grupos com menos de 3 pessoas escondidos).
+- **Privacidade**: o administrador só vê se a ficha existe e se está atualizada; o superusuário também não passa na checagem; os modelos não estão no admin do Django; notificações no celular nunca levam texto livre nem dado de saúde; o "Ouvir agenda de hoje" fala só horário, nome e foco.
+
+Decisões tomadas na implementação:
+- A lista da agenda não mostra condições de saúde (o exemplo "Atenção: hérnia de disco" ficaria no conteúdo da ficha). Ela só avisa que a ficha tem alertas; o conteúdo todo vem na ficha aberta.
+- Palavras do texto livre só apoiam a recorrência; nunca a marcam sozinhas e nunca geram sugestão à pessoa.
+- Alertas de atenção: gestação, anticoagulante, trombose/varizes, cirurgia e lesão recentes, osteoporose e alergia a óleos ou cremes. A lista está em `apps/ficha/vocabulario.py` (`ALERTAS`) e precisa ser validada pelo SESMT.
+
+Falta validar:
+- Leitura com TalkBack e VoiceOver (lista do dia, página da ficha, "Ouvir ficha", formulário em etapas) com os massoterapeutas.
+- Texto do consentimento e do aviso de privacidade com o jurídico/encarregado de dados (LGPD).
+- A lista de alertas de atenção com o SESMT, e o prazo de 90 dias de "ficha desatualizada" com a Silvana.
+- Que, em produção, a Silvana (administrador) não seja superusuária do Django.

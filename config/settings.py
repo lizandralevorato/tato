@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "apps.contas",
     "apps.agenda",
+    "apps.ficha",
     "apps.notificacoes",
     "apps.comunicados",
     "apps.painel",

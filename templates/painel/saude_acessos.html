@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Registro de acessos às fichas{% endblock %}
+{% block conteudo %}
+<p><a href="{% url 'painel:saude' %}?{{ consulta }}">Voltar para Saúde e foco</a></p>
+<h1>Registro de acessos às fichas</h1>
+<p class="introducao">Quem abriu a ficha de quem, e quando, de {{ de|date:"d/m/Y" }} a {{ ate|date:"d/m/Y" }}. Inclui os massoterapeutas, o SESMT e as planilhas baixadas.</p>
+
+{% include "painel/_filtros.html" %}
+
+<p role="status">{{ pagina.paginator.count }} registro{{ pagina.paginator.count|pluralize }}.</p>
+
+{% if pagina.object_list %}
+  <div class="tabela-rolavel" role="region" aria-labelledby="cap-acessos" tabindex="0">
+    <table>
+      <caption id="cap-acessos">Acessos, do mais recente para o mais antigo</caption>
+      <thead><tr><th scope="col">Quando</th><th scope="col">Quem abriu</th><th scope="col">Ficha de</th><th scope="col">O quê</th><th scope="col">Atendimento</th></tr></thead>
+      <tbody>
+        {% for a in pagina.object_list %}
+          <tr>
+            <th scope="row">{{ a.em|date:"d/m/Y" }}, {{ a.em|hora }}</th>
+            <td>{{ a.usuario_nome }}</td>
+            <td>{{ a.colaborador_nome|default:"Ninguém (planilha agregada)" }}</td>
+            <td>{{ a.get_finalidade_display }}</td>
+            <td>{% if a.agendamento %}{{ a.agendamento.inicio|date:"d/m" }}, {{ a.agendamento.inicio|hora }}{% else %}-{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if pagina.has_other_pages %}
+    <nav aria-label="Páginas do registro" class="navegacao-dias">
+      {% if pagina.has_previous %}<a class="botao botao--secundario" href="?{{ consulta }}&amp;pagina={{ pagina.previous_page_number }}">Página anterior</a>{% endif %}
+      <p>Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</p>
+      {% if pagina.has_next %}<a class="botao botao--secundario" href="?{{ consulta }}&amp;pagina={{ pagina.next_page_number }}">Próxima página</a>{% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <p>Nenhum acesso nesse período.</p>
+{% endif %}
+{% endblock %}

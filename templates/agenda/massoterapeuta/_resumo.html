@@ -1,0 +1,10 @@
+{# Resumo curto de um atendimento. Ordem: foco, região recorrente, pedido da pessoa, alerta. A ficha só abre pelo botão. #}
+{% load agenda %}
+{% if resumo.frases %}<p class="agenda__resumo">{{ resumo.frases|join:" " }}</p>{% endif %}
+{% if resumo.pode_ver_ficha %}
+  <p><a class="botao botao--secundario" href="{% url 'ficha:do_atendimento' ag.pk %}">Ver ficha<span class="sr-only"> de {{ ag.colaborador.nome }}, {{ ag.inicio|hora }}</span></a></p>
+{% elif resumo.tem_ficha %}
+  {% if resumo.ficha_abre_em %}<p class="texto-suave">Ficha preenchida. Você poderá abrir a partir das {{ resumo.ficha_abre_em|hora }}.</p>{% endif %}
+{% else %}
+  <p class="texto-suave">Sem ficha preenchida.</p>
+{% endif %}

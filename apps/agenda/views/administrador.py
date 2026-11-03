@@ -11,9 +11,11 @@ from django.utils.http import urlencode
 from django.views.decorators.http import require_POST
 
 from apps.contas.models import Usuario
+from apps.ficha.servicos import DIAS_PADRAO_DESATUALIZADA, situacoes_por_usuario
+from apps.ficha.servicos import situacao_da_ficha as situacao_ficha
 
 from .. import servicos
-from ..forms import PessoaForm, PoliticaForm
+from ..forms import PedidoSessaoForm, PessoaForm, PoliticaForm
 from ..formatacao import hora as formatar_hora
 from ..models import Agendamento, Massoterapeuta, Unidade
 from ..servicos import RegraViolada
@@ -131,6 +133,7 @@ def agendar_para(request):
             "hoje": timezone.localdate(),
             "horarios": horarios,
             "uso": uso,
+            "pedido_form": PedidoSessaoForm(),
         },
     )
 
@@ -138,6 +141,10 @@ def agendar_para(request):
 def _agendar_pela_equipe(request, colaborador, escolhido, massoterapeutas):
     dados = request.POST
     excecao = bool(dados.get("excecao"))
+    pedido = PedidoSessaoForm(dados)
+    if not pedido.is_valid():
+        raise RegraViolada("; ".join(erro for erros in pedido.errors.values() for erro in erros))
+    foco, observacao = pedido.cleaned_data["foco_regioes"], pedido.cleaned_data["observacao"]
     opcao = dados.get("horario", "")
     if opcao == "encaixe":
         massoterapeuta = escolhido or next((m for m in massoterapeutas if str(m.pk) == dados.get("m_encaixe")), None)
@@ -149,7 +156,10 @@ def _agendar_pela_equipe(request, colaborador, escolhido, massoterapeutas):
         except ValueError:
             raise RegraViolada("Informe a hora do encaixe, por exemplo 10h15.")
         inicio = timezone.make_aware(datetime.combine(dia, hora))
-        return servicos.agendar(colaborador, massoterapeuta, inicio, por=request.user, encaixe=True, excecao=excecao)
+        return servicos.agendar(
+            colaborador, massoterapeuta, inicio, por=request.user, encaixe=True, excecao=excecao,
+            foco_regioes=foco, observacao=observacao,
+        )
 
     try:
         m_id, inicio_iso = opcao.split("|", 1)
@@ -157,7 +167,10 @@ def _agendar_pela_equipe(request, colaborador, escolhido, massoterapeutas):
         inicio = datetime.fromisoformat(inicio_iso)
     except (ValueError, StopIteration):
         raise RegraViolada("Escolha um horário da lista ou o encaixe.")
-    return servicos.agendar(colaborador, massoterapeuta, inicio, por=request.user, excecao=excecao)
+    return servicos.agendar(
+        colaborador, massoterapeuta, inicio, por=request.user, excecao=excecao,
+        foco_regioes=foco, observacao=observacao,
+    )
 
 
 def _agendamento_da_unidade(request, pk):
@@ -179,6 +192,7 @@ def agendamento_detalhe(request, pk):
         {
             "ag": agendamento,
             "descricao": servicos.descrever(agendamento, com_colaborador=True),
+            "ficha_situacao": situacao_ficha(agendamento.colaborador),
             "historico": agendamento.historico.select_related("por"),
             "pode_cancelar": agendamento.status in Agendamento.PENDENTES,
             "pode_atender": agendamento.status in Agendamento.EM_ABERTO and agora >= agendamento.inicio,
@@ -224,11 +238,17 @@ def pessoas(request):
         qs = qs.filter(Q(first_name__icontains=busca) | Q(last_name__icontains=busca) | Q(email__icontains=busca))
     if papel in Usuario.Papel.values:
         qs = qs.filter(papel=papel)
+    lista = list(qs[:200])
+    # O administrador só sabe se a ficha existe e se está atualizada, nunca o conteúdo.
+    dias = servicos.politica_da(unidade).ficha_desatualizada_dias if unidade else DIAS_PADRAO_DESATUALIZADA
+    situacoes = situacoes_por_usuario([p.pk for p in lista if not p.eh_massoterapeuta], dias)
+    for p in lista:
+        p.ficha_situacao = situacoes.get(p.pk, "Não se aplica")
     return render(
         request,
         "agenda/administrador/pessoas.html",
         {
-            "pessoas": qs[:200],
+            "pessoas": lista,
             "total": qs.count(),
             "busca": busca,
             "papel": papel,

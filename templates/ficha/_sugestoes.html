@@ -1,0 +1,17 @@
+{# Sugestão de pôr a região na ficha. Variáveis: sugestoes (lista de {slug, com_artigo}), voltar (endereço). #}
+{% for s in sugestoes %}
+  <section class="cartao cartao--destaque" aria-labelledby="sugestao-{{ s.slug }}">
+    <h2 id="sugestao-{{ s.slug }}">Sugestão para a sua ficha</h2>
+    <p>Você tem pedido foco {{ s.com_artigo }} com frequência. Quer adicionar na sua ficha?</p>
+    <p class="ajuda">Isto não é um diagnóstico, é só um sinal para dar atenção. A decisão é sua: a ficha só muda se você quiser.</p>
+    <div class="acoes">
+      <a class="botao" href="{% url 'ficha:minha' %}?adicionar={{ s.slug }}&amp;proximo={{ voltar|urlencode:'' }}">Atualizar minha ficha<span class="sr-only"> incluindo {{ s.nome }}</span></a>
+      <form method="post" action="{% url 'ficha:dispensar' %}">
+        {% csrf_token %}
+        <input type="hidden" name="regiao" value="{{ s.slug }}">
+        <input type="hidden" name="proximo" value="{{ voltar }}">
+        <button type="submit" class="botao botao--secundario">Agora não<span class="sr-only"> para {{ s.nome }}</span></button>
+      </form>
+    </div>
+  </section>
+{% endfor %}

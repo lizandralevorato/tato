@@ -148,6 +148,9 @@ class PerfilAcessibilidade(models.Model):
     vibracao = models.BooleanField("vibrar o celular nos avisos", default=True)
     som = models.BooleanField("tocar um som curto nos avisos", default=True)
     libras = models.BooleanField("abrir o tradutor de Libras (VLibras) em todas as telas", default=False)
+    ocultar_aviso_fala_ficha = models.BooleanField(
+        "não mostrar o aviso de privacidade antes de ouvir a ficha", default=False
+    )
     configurado = models.BooleanField(default=False)
     atualizado_em = models.DateTimeField(auto_now=True)
 

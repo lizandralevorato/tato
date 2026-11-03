@@ -20,10 +20,13 @@ const PAGINAS = [
   "/entrar/",
   "/como-funciona/",
   "/acessibilidade/",
+  "/privacidade-da-ficha/",
   "/offline/",
   // Colaborador
   "/meus-agendamentos/",
   "/agendar/",
+  "/minha-ficha/",
+  "/minha-ficha/acessos/",
   "/comunicados/",
   "/preferencias/",
   // Massoterapeuta
@@ -40,6 +43,9 @@ const PAGINAS = [
   // SESMT
   "/painel/",
   "/painel/historico/",
+  "/painel/saude/",
+  "/painel/saude/fichas/",
+  "/painel/saude/acessos/",
 ];
 
 module.exports = {

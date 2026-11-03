@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}{{ titulo_pagina }}{% endblock %}
+{% block conteudo %}
+<p><a href="{{ voltar }}">Voltar para a agenda</a></p>
+<h1 id="titulo-ficha-atendimento" tabindex="-1" data-focar-ao-carregar>{{ titulo_pagina }}</h1>
+<p class="texto-suave">Somente leitura. Esta ficha fica aberta para você de 2 horas antes até 1 hora depois do atendimento, e o acesso fica registrado.</p>
+
+<div class="ficha-voz" data-ficha-voz hidden
+     data-url-ocultar-aviso="{% url 'ficha:ocultar_aviso_fala' %}"
+     data-mostrar-aviso="{{ mostrar_aviso_fala|yesno:'1,0' }}">
+  <div class="mensagem mensagem--aviso" data-aviso-fones tabindex="-1" role="group" aria-labelledby="aviso-fones-texto" hidden>
+    <span class="mensagem__icone" aria-hidden="true">!</span>
+    <div>
+      <p id="aviso-fones-texto">A ficha contém dados de saúde. Use fones se houver outras pessoas por perto.</p>
+      <label class="opcao opcao--verificacao" for="nao-mostrar-aviso">
+        <input type="checkbox" id="nao-mostrar-aviso" data-nao-mostrar-aviso>
+        <span class="opcao__texto">Não mostrar este aviso de novo</span>
+      </label>
+      <div class="acoes">
+        <button type="button" class="botao" data-aviso-continuar>Entendi, ouvir a ficha</button>
+        <button type="button" class="botao botao--secundario" data-aviso-cancelar>Agora não</button>
+      </div>
+    </div>
+  </div>
+  <div class="acoes" data-controles-fala>
+    <button type="button" class="botao" data-ficha-ouvir>Ouvir ficha</button>
+    <button type="button" class="botao botao--secundario" data-ficha-pausar hidden>Pausar</button>
+    <button type="button" class="botao botao--secundario" data-ficha-repetir hidden>Repetir</button>
+  </div>
+</div>
+
+{# Tudo o que é falado vem daqui: o texto da tela e o texto ouvido são o mesmo. #}
+<div id="resumo-ficha" class="pilha">
+  {% for secao in secoes %}
+    <section class="cartao{% if forloop.first %} cartao--destaque{% endif %}" aria-labelledby="secao-{{ forloop.counter }}">
+      <h2 id="secao-{{ forloop.counter }}">{{ secao.titulo }}</h2>
+      <ul class="lista-simples">
+        {% for frase in secao.frases %}<li>{{ frase }}</li>{% endfor %}
+      </ul>
+    </section>
+  {% endfor %}
+</div>
+
+<p class="texto-suave">Ficha atualizada pela pessoa em {{ ficha.atualizada_em|date:"d/m/Y" }}. Isto não é um diagnóstico.</p>
+<p><a class="botao botao--secundario" href="{{ voltar }}">Voltar para a agenda</a></p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/ouvir-ficha.js' %}" defer></script>
+{% endblock %}

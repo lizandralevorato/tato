@@ -11,6 +11,7 @@ urlpatterns = [
     path("agendar/confirmar/", colaborador.agendar_confirmar, name="agendar_confirmar"),
     path("agendar/<str:dia>/", colaborador.agendar_horario, name="agendar_horario"),
     path("agendamentos/<int:pk>/cancelar/", colaborador.cancelar, name="cancelar"),
+    path("agendamentos/<int:pk>/pedido/", colaborador.pedido, name="pedido"),
     path("agendamentos/<int:pk>/check-in/", colaborador.checkin, name="checkin"),
     path("agendamentos/<int:pk>/cheguei/", colaborador.chegada, name="chegada"),
     path("lista-de-espera/entrar/", colaborador.entrar_na_espera, name="entrar_na_espera"),

@@ -17,6 +17,7 @@ const CONTA_POR_CAMINHO = [
   ["/painel/", "sesmt@demo.local"],
   ["/meus-agendamentos/", "ana@demo.local"],
   ["/agendar/", "ana@demo.local"],
+  ["/minha-ficha/", "ana@demo.local"],
   ["/comunicados/", "ana@demo.local"],
   ["/preferencias/", "ana@demo.local"],
 ];

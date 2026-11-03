@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titulo %}Privacidade da ficha de saúde{% endblock %}
+{% block conteudo %}
+<h1>Privacidade da ficha de saúde</h1>
+<p class="introducao">A ficha é opcional. Veja, em linguagem simples, o que acontece com o que você preencher.</p>
+<div class="texto-longo pilha">
+  {% for titulo, texto in aviso %}
+    <section aria-labelledby="priv-{{ forloop.counter }}">
+      <h2 id="priv-{{ forloop.counter }}">{{ titulo }}</h2>
+      <p>{{ texto }}</p>
+    </section>
+  {% endfor %}
+  <p><strong>{{ nao_e_diagnostico }}</strong></p>
+  <p class="texto-suave">Versão do texto: {{ versao }}.</p>
+</div>
+{% if user.is_authenticated and not user.eh_massoterapeuta %}
+  <p><a class="botao" href="{% url 'ficha:minha' %}">Ir para minha ficha de saúde</a></p>
+{% endif %}
+{% endblock %}

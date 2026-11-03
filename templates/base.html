@@ -50,13 +50,16 @@
               <li><a href="{% url 'agenda:disponibilidade' %}" {% if nome_url == 'agenda:disponibilidade' %}aria-current="page"{% endif %}>Meus horários</a></li>
             {% elif user.eh_equipe %}
               <li><a href="{% url 'agenda:administrador' %}" {% if nome_url == 'agenda:administrador' or nome_url == 'agenda:administrador_agendar' %}aria-current="page"{% endif %}>Agenda da unidade</a></li>
-              <li><a href="{% url 'painel:inicio' %}" {% if nome_url == 'painel:inicio' or nome_url == 'painel:historico' %}aria-current="page"{% endif %}>Painel</a></li>
+              <li><a href="{% url 'painel:inicio' %}" {% if nome_url|slice:':7' == 'painel:' %}aria-current="page"{% endif %}>Painel</a></li>
               <li><a href="{% url 'agenda:pessoas' %}" {% if nome_url == 'agenda:pessoas' or nome_url == 'agenda:pessoa' or nome_url == 'agenda:pessoa_nova' %}aria-current="page"{% endif %}>Pessoas</a></li>
               <li><a href="{% url 'agenda:regras' %}" {% if nome_url == 'agenda:regras' %}aria-current="page"{% endif %}>Regras</a></li>
               <li><a href="{% url 'agenda:meus_agendamentos' %}" {% if nome_url == 'agenda:meus_agendamentos' %}aria-current="page"{% endif %}>Minhas massagens</a></li>
             {% else %}
               <li><a href="{% url 'agenda:meus_agendamentos' %}" {% if nome_url == 'agenda:meus_agendamentos' %}aria-current="page"{% endif %}>Meus agendamentos</a></li>
               <li><a href="{% url 'agenda:agendar_dia' %}" {% if nome_url == 'agenda:agendar_dia' or nome_url == 'agenda:agendar_horario' or nome_url == 'agenda:agendar_confirmar' %}aria-current="page"{% endif %}>Agendar</a></li>
+            {% endif %}
+            {% if not user.eh_massoterapeuta %}
+              <li><a href="{% url 'ficha:minha' %}" {% if nome_url == 'ficha:minha' or nome_url == 'ficha:apagar' or nome_url == 'ficha:meus_acessos' %}aria-current="page"{% endif %}>Minha ficha de saúde</a></li>
             {% endif %}
             {% if user.eh_massoterapeuta or user.eh_equipe or tem_comunicados %}
               <li><a href="{% url 'comunicados:lista' %}" {% if nome_url|slice:':12' == 'comunicados:' %}aria-current="page"{% endif %}>Comunicados{% if comunicados_nao_lidos %} <span class="contador">{{ comunicados_nao_lidos }}<span class="sr-only"> novo{{ comunicados_nao_lidos|pluralize }}</span></span>{% endif %}</a></li>
@@ -88,6 +91,7 @@
       </div>
       <p class="rodape__links">
         <a href="{% url 'como_funciona' %}">Como funciona o benefício</a>
+        <a href="{% url 'ficha:privacidade' %}">Privacidade da ficha de saúde</a>
         <a href="{% url 'acessibilidade' %}">Acessibilidade deste site</a>
         <button type="button" class="botao-link" data-abrir-libras hidden>Traduzir para Libras</button>
       </p>

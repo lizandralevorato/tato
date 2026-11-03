@@ -3,10 +3,15 @@ from datetime import date, datetime, timedelta
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import urlencode
 from django.views.decorators.http import require_POST
 
+from apps.ficha import servicos as ficha_servicos
+
 from .. import servicos
+from ..forms import PedidoSessaoForm
 from ..formatacao import dia as formatar_dia
 from ..formatacao import hora as formatar_hora
 from ..models import Agendamento, ListaEspera, Massoterapeuta, Unidade
@@ -55,6 +60,7 @@ def meus_agendamentos(request):
                 "limite_cancelar": limite_cancelar,
                 "pode_avisar_chegada": ag.status in Agendamento.PENDENTES and chegada_abre <= agora <= chegada_fecha,
                 "chegada_abre": chegada_abre,
+                "pode_editar_pedido": servicos.pode_editar_observacao(ag, agora),
             }
         )
     historico = (
@@ -76,6 +82,8 @@ def meus_agendamentos(request):
             "proximos": proximos,
             "historico": historico,
             "espera": espera,
+            "sugestoes": ficha_servicos.sugestoes_para_tela(request.user),
+            "voltar": reverse("agenda:meus_agendamentos"),
             "unidade": unidade,
             "restantes": servicos.restantes_na_semana(request.user, unidade, hoje) if unidade else 0,
             "politica": servicos.politica_da(unidade) if unidade else None,
@@ -93,6 +101,8 @@ def agendar_dia(request):
         request,
         "agenda/colaborador/agendar_dia.html",
         {
+            "convite": ficha_servicos.convite_a_mostrar(request.user),
+            "dias_ficha": ficha_servicos.dias_para_desatualizar(request.user),
             "dias": servicos.dias_para_agendar(unidade, request.user),
             "restantes": servicos.restantes_na_semana(request.user, unidade),
             "politica": servicos.politica_da(unidade),
@@ -183,11 +193,18 @@ def agendar_confirmar(request):
         return redirect("agenda:agendar_horario", dia=dia) if dia else redirect("agenda:agendar_dia")
 
     dia_da_escolha = timezone.localdate()
+    pedido = PedidoSessaoForm(request.POST if request.method == "POST" else None)
     try:
         inicio, massoterapeuta = _ler_escolha(request, dados, unidade)
         dia_da_escolha = timezone.localtime(inicio).date()
-        if request.method == "POST":
-            agendamento = servicos.agendar(request.user, massoterapeuta, inicio)
+        if request.method == "POST" and pedido.is_valid():
+            agendamento = servicos.agendar(
+                request.user,
+                massoterapeuta,
+                inicio,
+                foco_regioes=pedido.cleaned_data["foco_regioes"],
+                observacao=pedido.cleaned_data["observacao"],
+            )
             messages.success(request, f"Massagem agendada: {servicos.descrever(agendamento)}. {_texto_checkin(agendamento)}")
             return redirect("agenda:meus_agendamentos")
         servicos.validar_agendamento(request.user, massoterapeuta, inicio)
@@ -196,10 +213,14 @@ def agendar_confirmar(request):
         return redirect("agenda:agendar_horario", dia=dia_da_escolha.isoformat())
 
     abre, prazo, limite = servicos.janela_checkin(Agendamento(inicio=inicio, massoterapeuta=massoterapeuta))
+    voltar = reverse("agenda:agendar_confirmar") + "?" + urlencode({"inicio": inicio.isoformat(), "m": massoterapeuta.pk})
     return render(
         request,
         "agenda/colaborador/agendar_confirmar.html",
         {
+            "form": pedido,
+            "sugestoes": ficha_servicos.sugestoes_para_tela(request.user),
+            "voltar": voltar,
             "checkin_abre": abre,
             "checkin_prazo": prazo,
             "checkin_limite": limite,
@@ -210,6 +231,49 @@ def agendar_confirmar(request):
             "hora": formatar_hora(inicio),
             "duracao": massoterapeuta.duracao_sessao_min,
             "politica": servicos.politica_da(unidade),
+        },
+    )
+
+
+@acesso.colaborador
+def pedido(request, pk):
+    """Mudar o foco e a observação de uma massagem (só quem agendou, até o check-in abrir)."""
+    agendamento = get_object_or_404(
+        Agendamento.objects.select_related("massoterapeuta__usuario", "massoterapeuta__unidade"),
+        pk=pk,
+        colaborador=request.user,
+    )
+    if not servicos.pode_editar_observacao(agendamento):
+        messages.error(
+            request,
+            "O pedido para esta sessão não pode mais ser mudado. "
+            "Se precisar, fale com o administrador.",
+        )
+        return redirect("agenda:meus_agendamentos")
+    if request.method == "POST":
+        form = PedidoSessaoForm(request.POST)
+        if form.is_valid():
+            try:
+                servicos.atualizar_pedido(
+                    agendamento, form.cleaned_data["foco_regioes"], form.cleaned_data["observacao"], request.user
+                )
+            except RegraViolada as erro:
+                messages.error(request, str(erro))
+                return redirect("agenda:meus_agendamentos")
+            messages.success(request, f"Pedido para a sessão salvo: {servicos.descrever(agendamento)}.")
+            return redirect("agenda:meus_agendamentos")
+    else:
+        form = PedidoSessaoForm(
+            initial={"foco_regioes": agendamento.foco_regioes, "observacao": agendamento.observacao}
+        )
+    return render(
+        request,
+        "agenda/colaborador/pedido.html",
+        {
+            "form": form,
+            "agendamento": agendamento,
+            "descricao": servicos.descrever(agendamento),
+            "editavel_ate": servicos.editavel_ate(agendamento),
         },
     )
 

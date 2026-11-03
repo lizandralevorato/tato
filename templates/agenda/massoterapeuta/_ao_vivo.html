@@ -7,6 +7,7 @@
   {% if proximo %}
     <p class="destaque-grande">{{ proximo.inicio|hora }}, {{ proximo.colaborador.nome }}</p>
     <p>{% status proximo %}</p>
+    {% if proximo_resumo %}{% include "agenda/massoterapeuta/_resumo.html" with resumo=proximo_resumo ag=proximo %}{% endif %}
     <p>
       {% if proximo.status == "chegou" %}
         Chegou às {{ proximo.chegada_em|hora }}.
@@ -44,11 +45,12 @@
   {% if itens %}
     <ol class="agenda">
       {% for item in itens %}
-        <li class="agenda__item{% if item.em_aberto %} agenda__item--em-aberto{% endif %}">
+        <li class="agenda__item{% if item.em_aberto %} agenda__item--em-aberto{% endif %}" id="atendimento-{{ item.ag.pk }}" tabindex="-1">
           <div class="agenda__linha">
             <span class="agenda__hora">{{ item.ag.inicio|hora }}</span>
             <span class="agenda__nome">{{ item.ag.colaborador.nome }}</span>
           </div>
+          {% include "agenda/massoterapeuta/_resumo.html" with resumo=item.resumo ag=item.ag %}
           <div class="agenda__linha">
             {% status item.ag %}
             {% if item.pode_atender %}

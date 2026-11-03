@@ -5,11 +5,46 @@ from django.contrib.auth.password_validation import validate_password
 from django.utils import timezone
 
 from apps.contas.models import Usuario
+from apps.ficha.vocabulario import Regiao
 
 from .models import Bloqueio, Disponibilidade, PoliticaBeneficio, Unidade
 
 CAMPO_HORA = forms.TimeInput(attrs={"type": "time"}, format="%H:%M")
 CAMPO_DATA = forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d")
+
+
+class PedidoSessaoForm(forms.Form):
+    """Pedido opcional para uma massagem: onde focar e um texto livre curto."""
+
+    foco_regioes = forms.MultipleChoiceField(
+        label="Onde você quer focar hoje?",
+        choices=Regiao.choices,
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+    )
+    observacao = forms.CharField(
+        label="Quer escrever mais alguma coisa? (opcional)",
+        max_length=300,
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 3,
+                "maxlength": 300,
+                "data-contador": "observacao-contador",
+                "aria-describedby": "observacao-ajuda observacao-contador",
+            }
+        ),
+    )
+
+    def full_clean(self):
+        super().full_clean()
+        if self.is_bound and "observacao" in self._errors:
+            attrs = self.fields["observacao"].widget.attrs
+            attrs["aria-describedby"] += " observacao-erro"
+            attrs["aria-invalid"] = "true"
+
+    def clean_observacao(self):
+        return self.cleaned_data["observacao"].strip()
 
 
 class PeriodoForm(forms.Form):
@@ -64,6 +99,21 @@ class AusenciaForm(forms.Form):
 
 
 class PoliticaForm(forms.ModelForm):
+    # Campos da ficha de saúde: se vierem em branco, mantêm o valor atual.
+    CAMPOS_OPCIONAIS = ("recorrencia_janela_dias", "recorrencia_limite", "ficha_desatualizada_dias")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for nome in self.CAMPOS_OPCIONAIS:
+            self.fields[nome].required = False
+
+    def clean(self):
+        dados = super().clean()
+        for nome in self.CAMPOS_OPCIONAIS:
+            if dados.get(nome) is None and nome not in self.errors:
+                dados[nome] = getattr(self.instance, nome)
+        return dados
+
     class Meta:
         model = PoliticaBeneficio
         exclude = ["unidade"]
@@ -72,6 +122,9 @@ class PoliticaForm(forms.ModelForm):
             "checkin_abre_min": "120 minutos = o check-in abre 2 horas antes.",
             "checkin_prazo_min": "60 minutos = o check-in precisa ser feito até 1 hora antes.",
             "checkin_tolerancia_min": "Depois desse tempo sem check-in, a reserva é liberada para outra pessoa.",
+            "ficha_desatualizada_dias": "Depois desse tempo sem mudar a ficha, a pessoa recebe um lembrete (uma vez por período). 0 desliga o lembrete.",
+            "recorrencia_janela_dias": "Quantos dias para trás contar os pedidos de foco de cada pessoa. Padrão: 30.",
+            "recorrencia_limite": "Quando a mesma região aparece nos pedidos tantas vezes na janela, o massoterapeuta e o SESMT veem o aviso. É só um sinal de atenção, não um diagnóstico.",
         }
 
 

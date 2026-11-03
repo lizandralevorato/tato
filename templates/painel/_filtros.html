@@ -10,6 +10,7 @@
       <label for="filtro-ate">Até</label>
       <input type="date" id="filtro-ate" name="ate" value="{{ ate.isoformat }}">
     </div>
+    {% if not sem_massoterapeuta %}
     <div class="campo">
       <label for="filtro-m">Massoterapeuta</label>
       <select id="filtro-m" name="m">
@@ -17,6 +18,7 @@
         {% for m in massoterapeutas %}<option value="{{ m.pk }}"{% if massoterapeuta and massoterapeuta.pk == m.pk %} selected{% endif %}>{{ m.nome }}</option>{% endfor %}
       </select>
     </div>
+    {% endif %}
     {% if unidades %}
       <div class="campo">
         <label for="filtro-unidade">Unidade</label>

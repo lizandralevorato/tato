@@ -57,6 +57,11 @@ def administrador(unidade):
 
 
 @pytest.fixture
+def sesmt(unidade):
+    return criar_usuario("sesmt@teste.local", Usuario.Papel.SESMT, unidade, "Sesmt")
+
+
+@pytest.fixture
 def segunda():
     """Uma segunda-feira futura, para os testes não dependerem do dia de hoje."""
     hoje = timezone.localdate()

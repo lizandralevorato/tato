@@ -54,6 +54,11 @@ Cole as três linhas no `.env` e depois:
 | `lucia` | Massoterapeuta (só manhã) | alto contraste claro, texto 250%, letra legível |
 | `ana`, `bruno`, `carla` | Colaboradores | primeiro acesso (passam pelas preferências) |
 
+Fichas de saúde fictícias: a **Ana** (completa, com alertas e região recorrente: ombros, 3x em 30 dias) e o
+**Bruno** (parcial). A **Carla** fica sem ficha. Para testar o botão **Ver ficha** do massoterapeuta, que só
+existe de 2 h antes até 1 h depois do atendimento, rode `manage.py popular_demo --agora`: cria um atendimento da
+Ana com o Carlos daqui a 30 minutos.
+
 ## Testes
 
 ```bash
@@ -70,6 +75,12 @@ Cole as três linhas no `.env` e depois:
 - `tests/test_massoterapeuta.py`: horários semanais, folgas com confirmação de cancelamento.
 - `tests/test_lista_espera.py`: aviso de vaga ao cancelar ou liberar, quem sai da lista.
 - `tests/test_painel_comunicados.py`: indicadores, CSV, histórico, comunicados, "Como funciona" e Libras.
+- Ficha de saúde: `tests/test_ficha_modelos.py` (migrações reversíveis, versões imutáveis, palavras de região),
+  `test_ficha_colaborador.py` (criar, editar, apagar, consentimento, privacidade),
+  `test_pedido_sessao.py` (foco e observação em cada agendamento, edição até o check-in abrir),
+  `test_ficha_recorrencia.py` (janela, limite, sugestão, convite, Regras),
+  `test_ficha_massoterapeuta.py` (janela de acesso, 403/404 por perfil, registro de acesso, resumo da agenda, fala) e
+  `test_painel_saude.py` (painel do SESMT, planilha agregada, registro de acessos, o administrador não vê a ficha).
 
 ### Lighthouse
 
@@ -81,9 +92,11 @@ npm run lighthouse
 ```
 
 - Sobe um servidor próprio na porta 8020 (não atrapalha o da 8010) e roda o Lighthouse em
-  19 páginas: públicas, colaborador, massoterapeuta, administrador e SESMT.
+  25 páginas: públicas, colaborador, massoterapeuta, administrador e SESMT.
 - Entra sozinho com as contas de `popular_demo` ([lighthouse/entrar.js](lighthouse/entrar.js)),
   então rode `popular_demo` antes. O massoterapeuta é o `carlos` (alto contraste, texto 200%).
+- A página da ficha de um atendimento (`/massoterapeuta/atendimentos/<id>/ficha/`) não está na lista: ela só abre
+  dentro da janela de horário. As checagens de acessibilidade dela rodam nos testes (`test_ficha_massoterapeuta.py`).
 - **Falha se alguma página ficar abaixo de 100 em acessibilidade.** Desempenho, boas práticas
   e SEO só avisam (o servidor é o de desenvolvimento).
 - Relatórios em HTML, em português, ficam em `.lighthouseci/relatorios/`.
@@ -99,34 +112,53 @@ config/                 settings e urls
 apps/contas/            usuário (login por e-mail), papéis, PerfilAcessibilidade
 apps/agenda/
   models.py             Unidade, PoliticaBeneficio, Massoterapeuta, Disponibilidade, Bloqueio,
-                        Agendamento, HistoricoAgendamento, ListaEspera
+                        Agendamento (com foco e observação da sessão), HistoricoAgendamento, ListaEspera
   servicos.py           TODAS as regras de negócio (as views só chamam daqui)
   formatacao.py         "9h20", "amanhã, quinta-feira, 1 de outubro"
-  forms.py              horários, ausências, pessoas, regras do benefício
+  forms.py              horários, ausências, pessoas, regras do benefício, pedido da sessão
   views/                colaborador, massoterapeuta, administrador (inclui cadastros), paginas
+apps/ficha/             ficha de saúde (dado sensível, LGPD)
+  vocabulario.py        regiões do corpo, condições, pressão e sinônimos: o vocabulário único
+  models.py             FichaSaude, FichaRegiao, FichaVersao (imutável), AcessoFicha, ApagamentoFicha...
+  servicos.py           salvar/apagar, versões, recorrência, sugestões, janela de acesso, resumo
+  permissoes.py         decoradores estritos (o superusuário NÃO passa por cima do papel)
+  privacidade.py        texto do consentimento e do aviso (com versão)
+  indicadores.py        números do painel de saúde do SESMT
 apps/notificacoes/
   avisos.py             quem é avisado de quê (chamado pelas regras da agenda)
   push.py               envio Web Push e tratamento de falhas
   tarefas.py            lembretes e avisos periódicos (comando `notificacoes`)
 apps/comunicados/       comunicados da empresa e quem já leu
-apps/painel/            indicadores do SESMT, CSV e histórico de alterações
+apps/painel/            indicadores do SESMT, CSV, histórico de alterações e painel de saúde (saude.py)
 templates/              base.html (skip link, landmarks, regiões aria-live) + componentes/
 static/css/             tokens.css (cores/temas), base.css, componentes.css
 static/js/anunciador.js aria-live + fala (Web Speech API) + vibração + bipe
 static/js/agenda-ao-vivo.js  atualiza a agenda do massoterapeuta a cada 20 s sem perder o foco
+static/js/ficha-etapas.js    ficha em 3 etapas (sem JS, as 3 aparecem juntas)
+static/js/ouvir-ficha.js     "Ouvir ficha": lê a própria tela, com pausar, continuar e repetir
+static/js/contador.js        contador de caracteres que não fala a cada tecla
 static/js/push.js       registra o service worker e o painel "Ativar notificações"
 static/js/libras.js     carrega o VLibras só quando a pessoa pede
 ```
 
 ## O que cada pessoa faz no site
 
-- **Colaborador**: agenda em 3 passos, faz check-in, avisa a chegada, cancela, entra na lista de espera de dias lotados e lê comunicados para todos.
-- **Massoterapeuta**: vê a agenda do dia ao vivo, marca atendido ou falta, pausa, edita os próprios horários semanais e marca folgas e férias (Meus horários), lê comunicados.
-- **Administrador**: agenda do dia por massoterapeuta, agendar ou encaixar alguém (com opção de exceção às regras), detalhes e histórico de cada agendamento, cadastro de pessoas, regras do benefício, comunicados.
-- **SESMT**: tudo o que o administrador faz, e entra direto no Painel (ocupação, faltas, cancelamentos, usuários únicos, CSV, histórico).
-- **Todos, sem login**: página pública [Como funciona](http://localhost:8010/como-funciona/) e a declaração de acessibilidade.
+- **Colaborador**: agenda em 3 passos, faz check-in, avisa a chegada, cancela, entra na lista de espera de dias lotados e lê comunicados para todos. Se quiser, preenche a **ficha de saúde** (opcional, em 3 etapas, pode mudar ou apagar quando quiser) e, ao confirmar uma massagem, conta onde quer focar naquele dia.
+- **Massoterapeuta**: vê a agenda do dia ao vivo, com o foco de cada atendimento, marca atendido ou falta, pausa, edita os próprios horários semanais e marca folgas e férias (Meus horários), lê comunicados. Abre a ficha de **uma pessoa por vez**, só dos próprios atendimentos, de 2 h antes até 1 h depois, e pode ouvi-la.
+- **Administrador**: agenda do dia por massoterapeuta, agendar ou encaixar alguém (com opção de exceção às regras), detalhes e histórico de cada agendamento (com a observação da sessão), cadastro de pessoas, regras do benefício, comunicados. **Não vê fichas de saúde**: só sabe se a ficha existe e se está atualizada.
+- **SESMT**: tudo o que o administrador faz, e entra direto no Painel (ocupação, faltas, cancelamentos, usuários únicos, CSV, histórico). É o único perfil que vê as fichas: painel **Saúde e foco** (regiões, condições, fichas preenchidas e desatualizadas, regiões recorrentes), ficha individual com histórico de versões, registro de acessos e planilha agregada.
+- **Todos, sem login**: página pública [Como funciona](http://localhost:8010/como-funciona/), a declaração de acessibilidade e o aviso de [privacidade da ficha](http://localhost:8010/privacidade-da-ficha/).
 
-O admin do Django (`/admin/`) fica só para o superusuário: cadastro de unidades e correções raras.
+O admin do Django (`/admin/`) fica só para o superusuário (os programadores): cadastro de unidades e correções raras. **Os modelos da ficha de saúde não estão registrados nele de propósito.**
+
+## Ficha de saúde e pedido da sessão
+
+- **Ficha (por pessoa):** regiões com dor (intensidade e frequência), condições, dor crônica, problema na coluna, preferência de pressão, o que evitar e observações. Tudo opcional, menos o aceite do aviso de privacidade (data, hora e versão do texto ficam gravados). Cada salvamento grava uma versão imutável (quem, quando, o que mudou). Apagar a ficha apaga também as versões; fica só o registro de que foi apagada.
+- **Pedido da sessão:** no passo 3 da reserva (e nos encaixes do administrador), foco por regiões e até 300 caracteres. Editável até o check-in abrir. Se a reserva é cancelada, o texto fica no histórico e some da tela do massoterapeuta.
+- **Região recorrente:** o sistema conta, por pessoa, quantas vezes cada região aparece no foco dos agendamentos realizados ou marcados na janela (padrão 3 vezes em 30 dias; janela e limite em **Regras**, por unidade). Palavras do texto livre só apoiam e nunca marcam sozinhas. Quando passa do limite, o massoterapeuta e o SESMT veem o aviso, e a pessoa recebe a sugestão "Quer adicionar na sua ficha?" (a ficha só muda se ela aceitar; "Agora não" silencia a região por 30 dias). **É um sinal de atenção, não um diagnóstico.**
+- **Quem vê o quê:** o massoterapeuta só abre a ficha de um atendimento dele, de 2 h antes até 1 h depois (fora disso, 403; atendimento de outro massoterapeuta, 404). A lista da agenda traz só foco, região recorrente, o pedido da pessoa e um aviso de que a ficha tem alertas, **nunca** o conteúdo da ficha, e a página aberta mostra a ficha inteira mais o pedido da sessão. O SESMT vê tudo com registro de acesso. O administrador não vê a ficha. O superusuário também não passa na checagem da ficha.
+- **Privacidade na voz e nos avisos:** o botão "Ouvir agenda de hoje" fala só horário, nome e foco. "Ouvir ficha" mostra o aviso de fones na primeira vez. Notificações no celular nunca levam texto livre nem dado de saúde.
+- **Planilha:** só a agregada (contagens por região e condição, sem nome, grupos com menos de 3 pessoas aparecem como "menos de 3"), só para o SESMT e com registro.
 
 ## Check-in (confirmar que vai)
 

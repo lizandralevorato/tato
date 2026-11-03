@@ -23,5 +23,8 @@ def inicio(request):
         destino = reverse("agenda:meus_agendamentos")
 
     if not perfil.configurado:
+        # Só na primeira vez: depois, o botão TATO sempre leva à tela principal.
+        perfil.configurado = True
+        perfil.save(update_fields=["configurado"])
         return redirect(f"{reverse('contas:preferencias')}?proximo={destino}")
     return redirect(destino)

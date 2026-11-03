@@ -4,6 +4,7 @@
 {% block conteudo %}
 <p class="texto-suave">Passo 1 de 3</p>
 <h1>Escolha o dia</h1>
+{% include "ficha/_convite.html" %}
 {% if not restantes %}
   <p class="mensagem mensagem--aviso"><span class="mensagem__icone" aria-hidden="true">!</span>
     <span>Você já usou as {{ politica.max_por_semana }} massagens desta semana. Escolha um dia a partir da próxima segunda-feira.</span></p>

@@ -26,6 +26,8 @@
     <li>Modo simplificado, com menos informação por tela.</li>
     <li>Avisos falados, vibração e som quando alguém chega ou cancela.</li>
     <li>Sem limite de tempo para preencher nada e sem CAPTCHA.</li>
+    <li>Ficha de saúde em 3 etapas curtas, com listas e caixas de marcar comuns (sem mapa do corpo em imagem). Sem JavaScript, as 3 etapas aparecem na mesma página.</li>
+    <li>Para o massoterapeuta, cada ficha abre em uma página própria, e o botão Ouvir ficha lê em voz alta o mesmo texto que está na tela, com pausar, continuar e repetir.</li>
   </ul>
   {% if user.is_authenticated %}<p><a href="{% url 'contas:preferencias' %}">Ajustar minhas preferências</a></p>{% endif %}
 </section>
@@ -35,6 +37,7 @@
   <ul>
     <li>A vibração não funciona no iPhone, por limitação do próprio aparelho.</li>
     <li>Os avisos falados dependem das vozes em português instaladas no aparelho.</li>
+    <li>O botão Ouvir ficha depende da voz do aparelho e do JavaScript. Sem eles, a ficha continua legível na tela e pelo leitor de tela.</li>
   </ul>
 </section>
 

@@ -32,6 +32,13 @@
     {% include "componentes/campo.html" with campo=form.aviso_proximo_min %}
   </section>
 
+  <section class="cartao" aria-labelledby="secao-ficha">
+    <h2 id="secao-ficha">Ficha de saúde e regiões recorrentes</h2>
+    {% include "componentes/campo.html" with campo=form.ficha_desatualizada_dias %}
+    {% include "componentes/campo.html" with campo=form.recorrencia_janela_dias %}
+    {% include "componentes/campo.html" with campo=form.recorrencia_limite %}
+  </section>
+
   <div class="acoes"><button type="submit" class="botao botao--grande">Salvar regras</button></div>
 </form>
 {% endblock %}

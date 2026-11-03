@@ -1,0 +1,19 @@
+{# Convite para preencher (ou revisar) a ficha. Variáveis: convite ("primeira" ou "desatualizada"), dias_ficha. Nunca bloqueia a reserva. #}
+{% if convite %}
+  <section class="cartao cartao--destaque" aria-labelledby="titulo-convite-ficha">
+    {% if convite == "primeira" %}
+      <h2 id="titulo-convite-ficha">Quer preencher sua ficha para o massoterapeuta se preparar?</h2>
+      <p>Você conta onde sente dor e o que prefere, e o massoterapeuta já sabe onde focar. É opcional e leva poucos minutos. Você pode agendar sem preencher.</p>
+    {% else %}
+      <h2 id="titulo-convite-ficha">Sua ficha de saúde pode estar desatualizada</h2>
+      <p>Faz mais de {{ dias_ficha }} dias que você não mexe nela. Quer dar uma olhada e atualizar? É opcional.</p>
+    {% endif %}
+    <div class="acoes">
+      <a class="botao" href="{% url 'ficha:minha' %}?proximo={% url 'agenda:agendar_dia' %}">{% if convite == "primeira" %}Preencher agora{% else %}Revisar agora{% endif %}</a>
+      <form method="post" action="{% url 'ficha:agora_nao' %}">
+        {% csrf_token %}
+        <button type="submit" class="botao botao--secundario">Agora não</button>
+      </form>
+    </div>
+  </section>
+{% endif %}

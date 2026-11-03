@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}Pedido para a sessão{% endblock %}
+{% block conteudo %}
+<p><a href="{% url 'agenda:meus_agendamentos' %}">Voltar para meus agendamentos</a></p>
+<h1>Pedido para esta sessão</h1>
+<p class="introducao">{{ descricao|capfirst }}. Você pode mudar até {{ editavel_ate|dia }}, às {{ editavel_ate|hora }}, quando o check-in abre.</p>
+
+{% include "componentes/resumo_erros.html" %}
+
+<form method="post" class="pilha" novalidate>
+  {% csrf_token %}
+  {% include "agenda/_pedido_sessao.html" with titulo="O que você quer nesta sessão?" %}
+  <div class="acoes">
+    <button type="submit" class="botao botao--grande">Salvar pedido</button>
+    <a class="botao botao--secundario botao--grande" href="{% url 'agenda:meus_agendamentos' %}">Voltar sem salvar</a>
+  </div>
+</form>
+{% endblock %}

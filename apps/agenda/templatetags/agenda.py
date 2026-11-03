@@ -1,6 +1,8 @@
 from django import template
 from django.utils.html import format_html
 
+from apps.ficha.vocabulario import lista_em_frase, nome_curto_regiao
+
 from .. import formatacao
 
 register = template.Library()
@@ -29,6 +31,12 @@ def dia(valor):
 @register.filter
 def minutos_ate(valor):
     return formatacao.minutos_ate(valor) if valor else ""
+
+
+@register.filter
+def regioes_texto(slugs):
+    """["ombros", "pescoco"] -> "ombros e pescoço"."""
+    return lista_em_frase([nome_curto_regiao(s) for s in slugs or []])
 
 
 @register.simple_tag

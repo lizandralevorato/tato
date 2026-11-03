@@ -212,3 +212,16 @@ dd { margin: 0; }
 .agenda__item, .lista-dias a, .opcao { border-radius: var(--raio-m); }
 .agenda__item { box-shadow: var(--sombra); }
 .indicador__valor { color: var(--primaria); }
+
+/* Ficha de saúde */
+.etapas [hidden], .ficha-voz [hidden], .ficha-voz[hidden] { display: none !important; }
+.etapas [data-etapa] > h2 { scroll-margin-top: var(--espaco-4); }
+.regioes { display: grid; gap: var(--espaco-3); }
+.regiao { display: grid; gap: var(--espaco-3); }
+.regiao__detalhes { display: grid; gap: var(--espaco-3); padding-left: var(--espaco-4); border-left: 0.25rem solid var(--borda-campo); }
+.aviso-privacidade { padding: var(--espaco-4); border: 2px solid var(--info-borda); border-radius: var(--raio-m); background: var(--info-fundo); color: var(--info-texto); }
+.aviso-privacidade h3 { color: var(--info-texto); }
+.aviso-privacidade__lista { grid-template-columns: 1fr; margin-top: var(--espaco-3); }
+.aviso-privacidade dt { color: var(--info-texto); margin-top: var(--espaco-2); }
+.contador-caracteres { color: var(--texto-suave); font-size: 0.9375rem; }.agenda__resumo { font-size: 1.0625rem; color: var(--texto); max-width: 60ch; }
+.ficha-voz { display: grid; gap: var(--espaco-3); }

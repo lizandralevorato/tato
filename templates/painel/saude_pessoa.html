@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load agenda %}
+{% block titulo %}{% if sem_autorizacao %}Ficha não autorizada{% else %}Ficha de {{ pessoa.nome }}{% endif %}{% endblock %}
+{% block conteudo %}
+<p><a href="{% url 'painel:saude_fichas' %}">Voltar para as fichas</a></p>
+{% if sem_autorizacao %}
+<h1>Ficha não autorizada</h1>
+<p class="mensagem mensagem--info"><span class="mensagem__icone" aria-hidden="true">i</span>
+  <span>Esta pessoa não autorizou o SESMT a ver a ficha com o nome. Os dados dela entram só nas contagens do grupo.</span></p>
+{% else %}
+<h1>Ficha de saúde de {{ pessoa.nome }}</h1>
+<p class="mensagem mensagem--info"><span class="mensagem__icone" aria-hidden="true">i</span>
+  <span>Dado sensível. Este acesso foi registrado em seu nome. Isto não é um diagnóstico.</span></p>
+<p>{{ situacao.texto }}</p>
+
+{% if ficha %}
+  <p class="texto-suave">Aceitou o aviso de privacidade em {{ ficha.consentimento_em|date:"d/m/Y \à\s H:i" }} (texto versão {{ ficha.consentimento_versao }}).</p>
+  <div class="pilha">
+    {% for secao in secoes %}
+      <section class="cartao{% if forloop.first %} cartao--destaque{% endif %}" aria-labelledby="secao-{{ forloop.counter }}">
+        <h2 id="secao-{{ forloop.counter }}">{{ secao.titulo }}</h2>
+        <ul class="lista-simples">{% for frase in secao.frases %}<li>{{ frase }}</li>{% endfor %}</ul>
+      </section>
+    {% endfor %}
+  </div>
+
+  <section aria-labelledby="titulo-versoes" class="pilha">
+    <h2 id="titulo-versoes">Histórico de versões</h2>
+    <p class="ajuda">Cada vez que a pessoa salva, fica uma cópia que ninguém consegue alterar.</p>
+    <ol class="lista-simples">
+      {% for v in versoes %}
+        <li class="cartao">
+          <h3>Versão {{ v.numero }}: {{ v.em|dia|capfirst }}, {{ v.em|hora }}</h3>
+          <p>Por {% if v.por %}{{ v.por.nome }}{% else %}pessoa removida{% endif %}.</p>
+          {% if v.mudancas %}<ul>{% for m in v.mudancas %}<li>{{ m }}</li>{% endfor %}</ul>{% else %}<p>Salvou sem mudar nada.</p>{% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+{% else %}
+  <p>Esta pessoa ainda não preencheu a ficha. Abaixo estão só os pedidos que ela fez nas massagens.</p>
+{% endif %}
+
+{% if recorrentes %}
+  <section aria-labelledby="titulo-sinais" class="cartao">
+    <h2 id="titulo-sinais">Sinais de atenção</h2>
+    <ul>{% for r in recorrentes %}<li>{{ r.texto }}.</li>{% endfor %}</ul>
+    <p class="ajuda">É só um sinal para dar atenção, não um diagnóstico.</p>
+  </section>
+{% endif %}
+
+<section aria-labelledby="titulo-linha" class="pilha">
+  <h2 id="titulo-linha">Linha do tempo de focos (último ano)</h2>
+  {% if linha_do_tempo %}
+    <div class="tabela-rolavel" role="region" aria-labelledby="cap-linha" tabindex="0">
+      <table>
+        <caption id="cap-linha">Massagens, da mais recente para a mais antiga</caption>
+        <thead><tr><th scope="col">Quando</th><th scope="col">Massoterapeuta</th><th scope="col">Foco</th><th scope="col">Observação</th><th scope="col">Situação</th></tr></thead>
+        <tbody>
+          {% for ag in linha_do_tempo %}
+            <tr>
+              <th scope="row">{{ ag.inicio|date:"d/m/Y" }}, {{ ag.inicio|hora }}</th>
+              <td>{{ ag.massoterapeuta.nome }}</td>
+              <td>{{ ag.foco_regioes|regioes_texto|default:"Sem foco" }}</td>
+              <td>{{ ag.observacao|default:"" }}</td>
+              <td>{% status ag %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p>Nenhuma massagem realizada ou marcada no último ano.</p>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

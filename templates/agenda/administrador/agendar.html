@@ -107,6 +107,8 @@
           </div>
         </fieldset>
 
+        {% include "agenda/_pedido_sessao.html" with form=pedido_form titulo="Pedido da pessoa para esta sessão (opcional)" %}
+
         <div class="campo">
           <label class="opcao opcao--verificacao" for="excecao">
             <input type="checkbox" name="excecao" id="excecao" value="on" aria-describedby="ajuda-excecao">

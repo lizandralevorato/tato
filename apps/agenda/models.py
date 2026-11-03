@@ -44,6 +44,15 @@ class PoliticaBeneficio(models.Model):
     aviso_proximo_min = models.PositiveSmallIntegerField(
         "avisar o massoterapeuta quantos minutos antes (0 = desligado)", default=5
     )
+    recorrencia_janela_dias = models.PositiveSmallIntegerField(
+        "região recorrente: olhar quantos dias", default=30
+    )
+    recorrencia_limite = models.PositiveSmallIntegerField(
+        "região recorrente: a partir de quantas vezes (0 = desligado)", default=3
+    )
+    ficha_desatualizada_dias = models.PositiveSmallIntegerField(
+        "ficha de saúde desatualizada depois de quantos dias (0 = não lembrar)", default=90
+    )
 
     class Meta:
         verbose_name = "política do benefício"
@@ -181,6 +190,10 @@ class Agendamento(models.Model):
     confirmado_em = models.DateTimeField("check-in feito em", null=True, blank=True)
     chegada_em = models.DateTimeField(null=True, blank=True)
     cancelado_em = models.DateTimeField(null=True, blank=True)
+    # Pedido para esta sessão (opcional). Valores de apps.ficha.vocabulario.Regiao.
+    foco_regioes = models.JSONField("foco desta sessão", default=list, blank=True)
+    observacao = models.CharField("observação para esta sessão", max_length=300, blank=True)
+    observacao_em = models.DateTimeField("observação atualizada em", null=True, blank=True)
     cancelado_por = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -223,6 +236,7 @@ class HistoricoAgendamento(models.Model):
         FALTA = "falta", "Marcou falta"
         CANCELADO = "cancelado", "Cancelou"
         LIBERADO = "liberado", "Liberou (sem check-in)"
+        PEDIDO = "pedido", "Atualizou o pedido para a sessão"
 
     agendamento = models.ForeignKey(Agendamento, on_delete=models.CASCADE, related_name="historico")
     acao = models.CharField(max_length=20, choices=Acao.choices)

@@ -1,0 +1,15 @@
+{# Pedido opcional para a sessão. Variáveis: form (PedidoSessaoForm), titulo. #}
+<section class="cartao" aria-labelledby="titulo-pedido">
+  <h2 id="titulo-pedido">{{ titulo|default:"Quer contar algo para esta sessão?" }}</h2>
+  <p class="ajuda" id="observacao-ajuda">É opcional. Ex.: já fiz massagem esta semana, hoje quero focar nos ombros. Vale só para esta massagem. Podem ler: o massoterapeuta que atende, o administrador e o SESMT.</p>
+  {% include "componentes/grupo_opcoes.html" with campo=form.foco_regioes grade=True %}
+  <div class="campo">
+    <label for="{{ form.observacao.id_for_label }}">{{ form.observacao.label }}</label>
+    {% if form.observacao.errors %}<p class="erro-campo" id="observacao-erro"><span aria-hidden="true">✖ </span>{{ form.observacao.errors|join:" " }}</p>{% endif %}
+    {{ form.observacao }}
+    <p class="contador-caracteres" id="observacao-contador">Máximo de 300 caracteres.</p>
+    <span class="sr-only" id="observacao-contador-aviso" aria-live="polite"></span>
+  </div>
+</section>
+{% load static %}
+<script src="{% static 'js/contador.js' %}" defer></script>

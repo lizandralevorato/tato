@@ -11,6 +11,9 @@
   <dl>
     <dt>Origem</dt><dd>{{ ag.get_origem_display }}</dd>
     <dt>E-mail</dt><dd>{{ ag.colaborador.email }}</dd>
+    <dt>Foco da sessão</dt><dd>{{ ag.foco_regioes|regioes_texto|default:"Não informado" }}</dd>
+    <dt>Observação</dt><dd>{{ ag.observacao|default:"Nenhuma" }}</dd>
+    <dt>Ficha de saúde</dt><dd>{{ ficha_situacao.rotulo }}</dd>
     {% if ag.cancelado_por %}<dt>Cancelado por</dt><dd>{{ ag.cancelado_por.nome }}</dd>{% endif %}
   </dl>
   {% if pode_cancelar or pode_atender or pode_faltar %}

@@ -38,14 +38,18 @@
            vozes.find(function (v) { return /^pt/i.test(v.lang); }) || null;
   }
 
-  function falar(texto, forcar) {
-    if (!temFala || (!config.fala && !forcar)) return false;
+  function criarFala(texto) {
     var fala = new SpeechSynthesisUtterance(texto);
     fala.lang = "pt-BR";
     fala.rate = config.velocidade;
     var voz = vozPortugues();
     if (voz) fala.voice = voz;
-    window.speechSynthesis.speak(fala);
+    return fala;
+  }
+
+  function falar(texto, forcar) {
+    if (!temFala || (!config.fala && !forcar)) return false;
+    window.speechSynthesis.speak(criarFala(texto));
     return true;
   }
 
@@ -105,6 +109,7 @@
   window.Anunciador = {
     anunciar: anunciar,
     falar: falar,
+    criarFala: criarFala,
     pararFala: pararFala,
     liberarAudio: liberarAudio,
     temFala: temFala,
@@ -119,6 +124,11 @@
     // Mensagens do servidor também são faladas, se a pessoa quiser.
     document.querySelectorAll("[data-mensagem]").forEach(function (el) {
       falar(el.textContent.trim());
+    });
+
+    // Páginas que movem o foco para o título anunciam a confirmação pela região aria-live.
+    document.querySelectorAll("[data-anunciar-ao-carregar]").forEach(function (el) {
+      escreverNaRegiao(el.dataset.anunciarAoCarregar, false);
     });
 
     // Botões "Ouvir ..." (só aparecem se o navegador tem voz).
