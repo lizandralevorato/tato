@@ -158,6 +158,13 @@ def xlsx_resumo(dados):
     return _bytes(planilha)
 
 
+def xlsx_agregado(cabecalho, linhas):
+    planilha = Workbook()
+    planilha.remove(planilha.active)
+    _aba(planilha, "Agregado de saúde", cabecalho, linhas)
+    return _bytes(planilha)
+
+
 def xlsx_fichas(cabecalho, linhas):
     planilha = Workbook()
     planilha.remove(planilha.active)

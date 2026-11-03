@@ -97,7 +97,7 @@
 <section aria-labelledby="titulo-baixar" class="cartao">
   <h2 id="titulo-baixar">Planilha agregada</h2>
   <p>Contagens por região e condição, sem nome de ninguém. Grupos com menos de 3 pessoas aparecem como “menos de 3”. O download fica registrado.</p>
-  <p><a href="{% url 'painel:saude_csv' %}?{{ consulta }}">Baixar em CSV</a></p>
+  <p><a href="{% url 'painel:saude_csv' %}?{{ consulta }}">Baixar em CSV</a> ou <a href="{% url 'painel:saude_agregado_xlsx' %}?{{ consulta }}">Baixar em Excel (XLSX)</a></p>
 </section>
 {% endif %}
 {% endblock %}

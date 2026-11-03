@@ -161,6 +161,20 @@ def csv_agregado(request):
 
 @never_cache
 @sesmt
+def xlsx_agregado(request):
+    """Mesma planilha agregada do CSV, em Excel. Também registra o acesso."""
+    filtros = _filtros(request)
+    if not filtros["unidade"]:
+        raise Http404
+    dados = indicadores.resumo(filtros["unidade"], filtros["de"], filtros["ate"])
+    servicos.registrar_acesso(request.user, None, AcessoFicha.Finalidade.SESMT_AGREGADO)
+    linhas = list(indicadores.linhas_agregadas(dados))
+    conteudo = exportacao.xlsx_agregado(["Indicador", "Item", "Pessoas"], linhas)
+    return _xlsx(conteudo, f"saude_agregado_{filtros['de']}_{filtros['ate']}.xlsx")
+
+
+@never_cache
+@sesmt
 def xlsx_fichas(request):
     """Uma linha por ficha: com nome e conteúdo só de quem autorizou; as outras saem sem nome e sem dados."""
     filtros = _filtros(request)
