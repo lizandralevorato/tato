@@ -63,6 +63,11 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
+            "--sem-reservas",
+            action="store_true",
+            help="Não cria agendamentos de exemplo (agenda livre).",
+        )
+        parser.add_argument(
             "--agora",
             action="store_true",
             help="Cria um atendimento da Ana com o Carlos daqui a 30 minutos (para testar o botão Ver ficha).",
@@ -96,8 +101,11 @@ class Command(BaseCommand):
         ]
 
         fichas = self._fichas(colaboradores)
-        recorrentes = self._regiao_recorrente(colaboradores, massoterapeutas[0])
-        criados = self._agendamentos_de_exemplo(unidade, colaboradores)
+        if options["sem_reservas"]:
+            recorrentes = criados = 0
+        else:
+            recorrentes = self._regiao_recorrente(colaboradores, massoterapeutas[0])
+            criados = self._agendamentos_de_exemplo(unidade, colaboradores)
         if options["agora"]:
             self._atendimento_agora(colaboradores[0], massoterapeutas[0])
         Comunicado.objects.get_or_create(
