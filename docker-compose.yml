@@ -1,0 +1,47 @@
+# Ambiente parecido com produção, para testar no seu computador:
+#   docker compose up --build
+#   abra http://localhost:8000
+# Os dados ficam no volume "pgdata" (apagar tudo: docker compose down -v).
+
+x-app: &app
+  build: .
+  environment:
+    DJANGO_DEBUG: "0"
+    DJANGO_SECRET_KEY: "chave-local-so-para-testar-no-docker"
+    DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
+    DJANGO_SSL_REDIRECT: "0" # localmente não há HTTPS
+    DATABASE_URL: "postgres://tato:tato@db:5432/tato"
+    # Reaproveita as chaves de notificação do seu .env, se existirem.
+    VAPID_PUBLIC_KEY: "${VAPID_PUBLIC_KEY:-}"
+    VAPID_PRIVATE_KEY: "${VAPID_PRIVATE_KEY:-}"
+    VAPID_CONTATO: "${VAPID_CONTATO:-mailto:administrador@suaempresa.com.br}"
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: tato
+      POSTGRES_USER: tato
+      POSTGRES_PASSWORD: tato
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tato -d tato"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  web:
+    <<: *app
+    ports:
+      - "8000:8000"
+
+  notificacoes:
+    <<: *app
+    command: ["python", "manage.py", "notificacoes", "--continuo"]
+
+volumes:
+  pgdata:

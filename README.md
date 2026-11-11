@@ -4,6 +4,7 @@ Site acessível para colaboradores agendarem massagem e para massoterapeutas (co
 níveis de deficiência visual) acompanharem a própria agenda pelo celular.
 
 - Plano completo e decisões: [PLANO.md](PLANO.md)
+- Publicar na internet (Docker): [DEPLOY.md](DEPLOY.md)
 - Stack: Django 5.2 LTS (back e front, templates) + JavaScript mínimo, SQLite local
 - Paleta: DT-WBS (`#8A38FE`, `#08A0FF`, `#12DA76`, Open Sans), ajustada para contraste AAA
   em [static/css/tokens.css](static/css/tokens.css)
@@ -195,5 +196,5 @@ Service worker e push só funcionam em **HTTPS** (ou em `localhost` no próprio 
 
 Local, em SQLite (`db.sqlite3`), sem configuração. A restrição que impede dois agendamentos
 no mesmo horário é um índice único parcial, suportado tanto no SQLite quanto no PostgreSQL.
-Para trocar para PostgreSQL, preencha `POSTGRES_*` no `.env` (ver `.env.example`). O driver
-(`psycopg[binary]`) já está no `requirements.txt`.
+Para trocar para PostgreSQL, preencha `POSTGRES_*` ou `DATABASE_URL` no `.env` (ver `.env.example`).
+O driver (`psycopg[binary]`) já está no `requirements.txt`. Em produção, use PostgreSQL (ver [DEPLOY.md](DEPLOY.md)).

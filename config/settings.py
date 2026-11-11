@@ -20,10 +20,19 @@ def env_lista(nome, padrao=""):
     return [item.strip() for item in os.getenv(nome, padrao).split(",") if item.strip()]
 
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-inseguro-troque-em-producao")
+CHAVE_DEV = "dev-inseguro-troque-em-producao"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or CHAVE_DEV
 DEBUG = env_bool("DJANGO_DEBUG", True)
 ALLOWED_HOSTS = env_lista("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
-CSRF_TRUSTED_ORIGINS = env_lista("DJANGO_CSRF_TRUSTED_ORIGINS")
+# Sem valor explícito, aceita HTTPS nos próprios hosts permitidos (evita 403 no login).
+CSRF_TRUSTED_ORIGINS = env_lista("DJANGO_CSRF_TRUSTED_ORIGINS") or [
+    f"https://{host.lstrip('.')}" for host in ALLOWED_HOSTS if host not in {"localhost", "127.0.0.1", "*"}
+]
+
+if not DEBUG and SECRET_KEY == CHAVE_DEV:
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured("Defina DJANGO_SECRET_KEY em produção (DJANGO_DEBUG=0).")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -73,7 +82,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-if os.getenv("POSTGRES_DB"):
+if os.getenv("DATABASE_URL"):
+    # Formato entregue pelas hospedagens: postgres://usuario:senha@host:5432/banco
+    import dj_database_url
+
+    DATABASES = {"default": dj_database_url.config(conn_max_age=600, conn_health_checks=True)}
+elif os.getenv("POSTGRES_DB"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -146,6 +160,18 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
     SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Erros e avisos vão para a saída padrão, que é o que as hospedagens mostram como log.
+# (Sem isto, com DEBUG=False o Django só tentaria mandar os erros por e-mail.)
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": "WARNING"},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"), "propagate": False},
+    },
+}
 
 # Web Push (notificações). Gere com: python manage.py gerar_chaves_vapid
 VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY", "")

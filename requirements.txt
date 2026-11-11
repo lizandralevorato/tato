@@ -4,3 +4,5 @@ python-dotenv==1.2.3
 openpyxl==3.1.5
 pywebpush==2.5.0
 psycopg[binary]==3.3.6
+gunicorn==23.0.0
+dj-database-url==2.3.0

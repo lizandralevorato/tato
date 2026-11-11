@@ -1,0 +1,42 @@
+# O que NÃO entra na imagem.
+
+# Segredos e banco local
+.env
+.env.*
+!.env.example
+db.sqlite3
+*.sqlite3
+*.sqlite3-journal
+
+# Ambientes e caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+staticfiles/
+media/
+*.log
+
+# Ferramentas de desenvolvimento
+.git/
+.gitignore
+.claude/
+.vscode/
+.idea/
+node_modules/
+.lighthouseci/
+lighthouse/
+lighthouserc.js
+package.json
+package-lock.json
+tests/
+pytest.ini
+requirements-dev.txt
+
+# Arquivos do próprio Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
