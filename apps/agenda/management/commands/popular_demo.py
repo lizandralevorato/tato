@@ -6,6 +6,7 @@ Uso: python manage.py popular_demo
 Todas as contas de demonstração usam a senha definida em SENHA_DEMO.
 """
 
+import random
 from datetime import datetime, time, timedelta
 
 from django.core.management.base import BaseCommand
@@ -18,6 +19,7 @@ from apps.comunicados.models import Comunicado
 from apps.contas.models import PerfilAcessibilidade, Usuario
 from apps.ficha import servicos as ficha
 from apps.ficha.models import FichaSaude
+from apps.ficha.vocabulario import Condicao, Frequencia, Intensidade, Pressao, Regiao
 
 SENHA_DEMO = "massagem-demo-2026"
 DOMINIO = "demo.local"
@@ -32,6 +34,17 @@ MASSOTERAPEUTAS = [
     ("lucia", "Lúcia", "Ferreira", [MANHA], {"tema": "ac-claro", "tamanho_texto": 250, "fonte": "legivel"}),
 ]
 COLABORADORES = [("ana", "Ana", "Costa"), ("bruno", "Bruno", "Alves"), ("carla", "Carla", "Mendes")]
+
+COLABORADORES_EXTRAS = [
+    ("daniel", "Daniel", "Rocha"), ("elisa", "Elisa", "Martins"), ("fabio", "Fábio", "Nunes"),
+    ("gabriela", "Gabriela", "Teixeira"), ("hugo", "Hugo", "Barros"), ("isabela", "Isabela", "Cardoso"),
+    ("joao", "João", "Ribeiro"), ("karina", "Karina", "Dias"), ("leandro", "Leandro", "Gomes"),
+    ("mariana", "Mariana", "Araújo"), ("nelson", "Nelson", "Freitas"), ("olivia", "Olívia", "Castro"),
+    ("paulo", "Paulo", "Moreira"), ("queila", "Queila", "Pinto"), ("rafael", "Rafael", "Cunha"),
+    ("sabrina", "Sabrina", "Lopes"), ("tiago", "Tiago", "Ramos"), ("vanessa", "Vanessa", "Monteiro"),
+    ("wagner", "Wagner", "Correia"), ("yasmin", "Yasmin", "Campos"),
+]
+SEMANAS_DE_HISTORICO = 8
 
 # Fichas fictícias. A Carla fica sem ficha, para mostrar "Sem ficha preenchida".
 FICHAS_DEMO = {
@@ -100,12 +113,17 @@ class Command(BaseCommand):
             for apelido, nome, sobrenome in COLABORADORES
         ]
 
-        fichas = self._fichas(colaboradores)
+        extras = [
+            self._usuario(apelido, nome, sobrenome, Usuario.Papel.COLABORADOR, unidade)
+            for apelido, nome, sobrenome in COLABORADORES_EXTRAS
+        ]
+        fichas = self._fichas(colaboradores) + self._fichas_aleatorias(extras)
         if options["sem_reservas"]:
             recorrentes = criados = 0
         else:
             recorrentes = self._regiao_recorrente(colaboradores, massoterapeutas[0])
             criados = self._agendamentos_de_exemplo(unidade, colaboradores)
+            criados += self._historico(massoterapeutas, colaboradores + extras)
         if options["agora"]:
             self._atendimento_agora(colaboradores[0], massoterapeutas[0])
         Comunicado.objects.get_or_create(
@@ -142,6 +160,92 @@ class Command(BaseCommand):
                 ficha.salvar_ficha(usuario, dados, consentimento=True)
                 criadas += 1
         return criadas
+
+    def _fichas_aleatorias(self, usuarios):
+        """Fichas variadas (cerca de 70% das pessoas), sempre as mesmas por apelido."""
+        criadas = 0
+        for usuario in usuarios:
+            if FichaSaude.objects.filter(usuario=usuario).exists():
+                continue
+            rng = random.Random(usuario.email)
+            if rng.random() > 0.7:
+                continue
+            regioes = {
+                r: {"intensidade": rng.choice(Intensidade.values), "frequencia": rng.choice(Frequencia.values)}
+                for r in rng.sample(Regiao.values, rng.randint(1, 3))
+            }
+            dados = {
+                "regioes": regioes,
+                "condicoes": rng.sample(Condicao.values, rng.choice([0, 0, 1, 1, 2])),
+                "pressao": rng.choice(Pressao.values),
+                "autoriza_sesmt": rng.random() < 0.5,
+            }
+            if rng.random() < 0.3:
+                dados.update(dor_cronica=True, dor_cronica_descricao="Dor que volta com frequência.")
+            ficha.salvar_ficha(usuario, dados, consentimento=True)
+            criadas += 1
+        return criadas
+
+    def _historico(self, massoterapeutas, colaboradores):
+        """Atendimentos dos últimos dias úteis (realizados, faltas e cancelamentos) para o painel ter números."""
+        rng = random.Random(2026)
+        hoje = timezone.localdate()
+        # Cada pessoa tem regiões preferidas; algumas repetem foco e viram "região recorrente".
+        preferidas = {c.pk: rng.sample(Regiao.values, rng.randint(1, 2)) for c in colaboradores}
+        faladores = [c for c in colaboradores if rng.random() < 0.6]
+        por_semana = {}
+        criados = 0
+        for atras in range(SEMANAS_DE_HISTORICO * 7, 0, -1):
+            dia = hoje - timedelta(days=atras)
+            if dia.weekday() > 4:
+                continue
+            semana = dia - timedelta(days=dia.weekday())
+            ocupados = set()
+            for m in massoterapeutas:
+                passo = timedelta(minutes=m.duracao_sessao_min + m.intervalo_min)
+                for d in m.disponibilidades.filter(dia_semana=dia.weekday()):
+                    inicio = timezone.make_aware(datetime.combine(dia, d.hora_inicio))
+                    limite = timezone.make_aware(datetime.combine(dia, d.hora_fim))
+                    while inicio + timedelta(minutes=m.duracao_sessao_min) <= limite:
+                        if rng.random() < 0.65:
+                            pool = faladores if rng.random() < 0.7 else colaboradores
+                            c = rng.choice(pool)
+                            if c.pk not in ocupados and por_semana.get((c.pk, semana), 0) < 2:
+                                criados += self._atendimento_passado(rng, m, c, inicio, preferidas[c.pk])
+                                ocupados.add(c.pk)
+                                por_semana[(c.pk, semana)] = por_semana.get((c.pk, semana), 0) + 1
+                        inicio += passo
+        return criados
+
+    def _atendimento_passado(self, rng, massoterapeuta, colaborador, inicio, preferidas):
+        sorteio = rng.random()
+        status = (
+            Agendamento.Status.REALIZADO if sorteio < 0.78
+            else Agendamento.Status.FALTA if sorteio < 0.88
+            else Agendamento.Status.CANCELADO
+        )
+        foco = []
+        if rng.random() < 0.6:
+            foco = [rng.choice(preferidas)] if rng.random() < 0.75 else rng.sample(Regiao.values, 1)
+        extra = {}
+        if status == Agendamento.Status.REALIZADO:
+            extra = {"confirmado_em": inicio - timedelta(hours=1.5), "chegada_em": inicio - timedelta(minutes=3)}
+        elif status == Agendamento.Status.CANCELADO:
+            extra = {"cancelado_em": inicio - timedelta(hours=3), "cancelado_por": colaborador}
+        origem = Agendamento.Origem.ENCAIXE if rng.random() < 0.05 else Agendamento.Origem.AUTOAGENDAMENTO
+        _, novo = Agendamento.objects.get_or_create(
+            massoterapeuta=massoterapeuta,
+            inicio=inicio,
+            defaults={
+                "colaborador": colaborador,
+                "fim": inicio + timedelta(minutes=massoterapeuta.duracao_sessao_min),
+                "status": status,
+                "origem": origem,
+                "foco_regioes": foco,
+                **extra,
+            },
+        )
+        return int(novo)
 
     def _regiao_recorrente(self, colaboradores, massoterapeuta):
         """Pedidos de foco antigos, para o painel do SESMT e a agenda mostrarem uma região recorrente."""
